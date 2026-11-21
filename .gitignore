@@ -5,7 +5,6 @@ test-results
 playwright-report
 runs
 runs_mock
-runs_managed
 runs_shop
 runs_shop_mock
 runs_*/

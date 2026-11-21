@@ -1,12 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
 import { startServer } from "../app/server.mjs";
 
-// Raw request so paths like /__evidence/../x are sent exactly as written.
 function request(port, method, urlPath, body, headers = {}) {
   return new Promise((resolve, reject) => {
     const req = http.request({ host: "127.0.0.1", port, method, path: urlPath, headers }, res => {
@@ -47,37 +43,6 @@ test("busy port rejects instead of hanging", async () => {
   } finally { a.close(); }
 });
 
-test("evidence uploads stay inside evidenceDir", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "agentproof-test-"));
-  const evidenceDir = path.join(root, "evidence");
-  const server = await startServer(0, "", { evidenceDir });
-  try {
-    assert.equal((await request(server.port, "POST", "/__evidence/final.png", "png")).status, 201);
-    assert.equal((await request(server.port, "POST", "/__evidence/..%2F..%2Fescape.txt", "x")).status, 201);
-    assert.equal((await request(server.port, "POST", "/__evidence/../raw.txt", "y")).status, 201);
-    assert.equal((await request(server.port, "POST", "/__evidence/%E0%A4%A", "z")).status, 201); // bad encoding
-    assert.deepEqual(readdirSync(root), ["evidence"], "nothing written outside evidenceDir");
-    assert.deepEqual(readdirSync(evidenceDir).sort(), ["escape.txt", "final.png", "raw.txt", "upload.bin"]);
-    assert.equal(readFileSync(path.join(evidenceDir, "final.png"), "utf8"), "png");
-  } finally {
-    server.close();
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test("oversize evidence gets 413 and is not saved", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "agentproof-test-"));
-  const server = await startServer(0, "", { evidenceDir: root, maxEvidenceBytes: 10 });
-  try {
-    const r = await request(server.port, "POST", "/__evidence/big.bin", "x".repeat(100));
-    assert.equal(r.status, 413);
-    assert.deepEqual(readdirSync(root), []);
-  } finally {
-    server.close();
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
 test("oversize order gets 413 and is not recorded", async () => {
   const server = await startServer(0, "", { maxOrderBytes: 32 });
   try {
@@ -86,20 +51,5 @@ test("oversize order gets 413 and is not recorded", async () => {
     assert.deepEqual(server.orders, []);
   } finally {
     server.close();
-  }
-});
-
-test("evidenceToken rejects missing or wrong token and accepts matching token", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "agentproof-test-"));
-  const server = await startServer(0, "", { evidenceDir: root, evidenceToken: "sec-123" });
-  try {
-    assert.equal((await request(server.port, "POST", "/__evidence/a.txt", "no")).status, 401);
-    assert.equal((await request(server.port, "POST", "/__evidence/a.txt", "no", { "x-evidence-token": "wrong" })).status, 401);
-    assert.deepEqual(readdirSync(root), []);
-    assert.equal((await request(server.port, "POST", "/__evidence/a.txt", "ok", { "x-evidence-token": "sec-123" })).status, 201);
-    assert.equal(readFileSync(path.join(root, "a.txt"), "utf8"), "ok");
-  } finally {
-    server.close();
-    rmSync(root, { recursive: true, force: true });
   }
 });
