@@ -55,7 +55,7 @@ name anything missing.
 
 ```bash
 npm test          # unit tests: ground truth, scoring, server, JSON parsing, retries
-npm run smoke     # mock agent on a clean + buggy store, end to end, asserts 1 lie found
+npm run smoke     # mock agent end to end on the store and on mock Shop; asserts the expected lies
 npm run check     # both
 ```
 
@@ -106,10 +106,22 @@ with backoff on 429/5xx, so "Errors" in the table means a call failed 4 times.
   "confirmed" and nothing was saved.
 - Adding the network log closes that gap: 17/17, with no false alarms.
 
-**Live Shop MCP: first 4 runs** (`results/shop_v1.md`): `trust` and
-`agentproof+tools` (what the agent saw) caught 0/2 lies; `agentproof+wire`
-(what Shop really received) caught 2/2, no false alarms. Same pattern, on real
-carts.
+**Live Shop MCP: 24 real runs** (6 tasks × 4 fault settings, 1 run each,
+Gemini 4 Argon agent, 8 lies; `results/shop_v1.md`)
+
+| Verifier | Agent lies caught | False alarms | Accuracy |
+|---|---|---|---|
+| `trust` | 0/8 | 0/16 | 67% |
+| `agentproof+tools` (what the agent saw) | 0/8 | 0/16 | 67% |
+| `agentproof+wire` (what Shop really received) | **8/8** | **0/16** | **100%** |
+
+- All 8 lies come from **injected faults** (6 dropped carts, 1 dropped size
+  change, 1 hidden price increase). With no fault, the agent got all 6 tasks
+  right: **0 natural lies** on Shop.
+- All 24 answer-key judgments were re-checked by hand against the saved cart
+  state and fresh merchant data: 24/24 confirmed.
+
+See [Limitations](#limitations) before quoting these numbers.
 
 ## Mock mode
 
@@ -264,13 +276,22 @@ agentproof/            the product: run agents, check claims, score the checkers
   truth.mjs            ground truth: does the logged order match the task?
   agent.mjs            the agent being checked (Gemini browser loop) + mock
   collect.mjs          runs agent x bugs, records video + network + truth
-  verifiers.mjs        trust / single / agentproof / agentproof+network
+  verifiers.mjs        store: trust / single / agentproof / agentproof+network;
+                       Shop: trust / agentproof+tools / agentproof+wire
   metrics.mjs          accuracy, lies caught, false alarms
-  eval.mjs             scores verifiers against truth
-  managed.mjs          same as collect, with a Gemini Managed Agent
+  eval.mjs             scores verifiers against truth (store or Shop runs)
+  shop-tasks.json      6 Shop tasks + machine checks (quantity, size/color, price limit)
+  shop-agent.mjs       the Gemini agent on Shop MCP tools + mock
+  shop-proxy.mjs       allows only 6 cart-building tools; injects faults into the agent's view
+  shop-truth.mjs       Shop answer key: real cart + merchant variant data
+  shop-collect.mjs     runs Shop tasks x faults, writes runs_shop/
+  shop-view.mjs        short text summaries of Shop replies (what is stored and judged)
+  shop-mock.mjs        fake Shop for tests and mock mode
+  managed.mjs          same as collect, with a Gemini Managed Agent (not yet run)
   managed-lib.mjs      parses the managed agent's claim and HAR network log
 src/                   shared code
   gemini.mjs           Gemini SDK wrapper: retries, JSON parsing, model IDs from .env
+  shop-mcp.mjs         Shop MCP client: protocol, retries, redaction of key-bearing ids
   paths.mjs            repo-root paths (scripts work from any directory)
   cli.mjs              strict argument parsing (typos are errors)
   media.mjs            ffmpeg helpers
@@ -290,6 +311,8 @@ runs/                  collect.mjs output, one folder per task x bug:
                          verdict.<verifier>.<tag>.json (cached verdicts)
 runs_mock/             same, from --mock (plumbing only, never report these)
 runs_managed/          same, from managed.mjs (+ session.har, interaction.json)
+runs_shop/             shop-collect.mjs output: run.json (claim, tool log, wire log,
+                       real cart; key-bearing ids redacted) + verdicts
 results/<tag>.md       eval.mjs report: score table + every run a verifier got wrong
 ```
 
@@ -317,8 +340,9 @@ node agentproof/eval.mjs --runs runs_shop --tag shop_v1
 - **Verifiers:** `trust`, `agentproof+tools` (reads what the agent saw, like
   the video) and `agentproof+wire` (reads what Shop really got, like the
   network log). Eval picks these automatically for Shop runs.
-- **Real lies happen without faults too:** in testing, Shop answered
-  `create_cart` with success and an **empty** cart for a sold-out item.
+- **Shop itself can fail silently:** in our own setup testing (not an agent
+  run), Shop answered `create_cart` with success and an **empty** cart for a
+  sold-out item. In the 24 agent runs, the agent never hit this.
 - Key-bearing links (`continue_url`, `checkout_url`, cart tokens) are redacted
   from everything stored. Only short summaries of replies are kept, not
   catalog data.
@@ -327,6 +351,9 @@ Each live run creates real anonymous carts at real stores (no orders, no
 money; carts expire after 30 days).
 
 ## Gemini Managed Agent (Best Managed Agents award)
+
+**Status: not yet run.** The code exists but has never been run against the
+live Interactions API, so no results come from it.
 
 The agent being checked can be a Gemini Managed Agent instead of the simple loop.
 It runs in Google's cloud, so expose the store with a tunnel:
@@ -344,5 +371,28 @@ store's order log, which the agent and the verifiers never see.
 
 Check the Interactions API request/response fields in `managed.mjs` against
 Builder Resources before the first run.
+
+## Limitations
+
+- **Small samples, one run each.** 48 store runs and 24 Shop runs, each task ×
+  bug combination run once, with one agent model (Gemini 4 Argon) and one judge
+  (Gemini 4 Carbon). Run-to-run variance is not measured; treat the numbers as
+  a demonstration, not a benchmark score.
+- **The failures are designed.** Store bugs and Shop faults are injected by us.
+  The agent's claims are real and unscripted, but the conditions that make them
+  false are ours. On Shop, all 8 lies come from faults that change what the agent
+  sees; with no fault the agent made 0 lies.
+- **The evidence verifiers get a hint.** The `agentproof+network` prompt says an
+  order is only saved if `POST /api/order` succeeded; the `agentproof+wire`
+  prompt says a call missing from the wire log never reached Shop. Their perfect
+  scores partly reflect that guidance.
+- **Prompts are first versions (v1).** Not tuned or iterated on these results.
+- **What the answer keys check.** Store: exactly one order with the right items
+  and total. Shop: quantity, size/color, price limit, currency and stock. Color
+  can come from the merchant's product title when a store has no color option;
+  size must be a real option. Anything else (e.g. "best value") is not checked.
+- **Live data changes.** Shop prices and stock are what they were on
+  2026-11-21; anonymous carts expire after 30 days.
+- **Managed Agents: not run** (see above).
 
 

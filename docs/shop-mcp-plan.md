@@ -1,6 +1,8 @@
 # AgentProof on Shop MCP: build plan
 
-Status: draft for review. Nothing below is built yet.
+Status: built and run (24 live runs, 2026-11-21). This was the design doc; the
+results and limitations are in the README. The build-step table below is
+historical.
 
 ## Why
 

@@ -1,0 +1,3543 @@
+{
+ "source": "runs",
+ "count": 48,
+ "runs": [
+  {
+   "id": "cap_and_tee__checkout_always_disabled",
+   "task": "cap_and_tee",
+   "bug": "checkout_always_disabled",
+   "agentModel": "gemini-4-argon",
+   "seconds": 23,
+   "agent": {
+    "success": false,
+    "claim": "I added a Cap and a T-Shirt to the cart, totaling $35.00, but could not complete the purchase because the 'Place order' button is disabled.",
+    "steps": [
+     "click add-cap",
+     "click add-tee"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "blind1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added a Cap at t=6 and a T-Shirt at t=12 for the correct $35.00 total, the 'Place order' button remained disabled at t=20 and in the final screenshot. No order confirmation appeared and the network log shows no order submission.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     }
+    },
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=12 for the correct $35.00 total, the 'Place order' button remained disabled through t=20 and in the final screenshot. Furthermore, the network log contains no POST /api/order request, confirming the purchase was never completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Although the agent correctly added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=12 for the expected total of $35.00, the 'Place order' button remained disabled when clicked at t=20. As shown in the final screenshot, no order confirmation appeared and the purchase was never completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added a Cap at 00:06 and a T-Shirt at 00:12 to the cart, the 'Place order' button remained disabled throughout the recording (including when clicked around 00:20), so the purchase was never completed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": false,
+      "evidence": "The agent added a Cap at 00:06 and a T-Shirt at 00:12, bringing the cart total to $35.00, but the 'Place order' button remained disabled through 00:22 so the purchase was never completed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__discount_not_applied",
+   "task": "cap_and_tee",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 35,
+   "agent": {
+    "success": true,
+    "claim": "I added a Cap and a T-Shirt to the cart and placed the order, which is confirmed as Order number TS-1014.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "cap": 1,
+      "tee": 1
+     },
+     "total": 35,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "blind1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=13, correctly bringing the cart total to $35.00. It placed the order at t=21, which succeeded with a 201 POST response to /api/order and displayed confirmation TS-1014 at t=23, matching the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     }
+    },
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=13 for the expected total of $35.00, then clicked 'Place order' at t=21. The order was confirmed on screen as TS-1014 at t=23 (matching the final screenshot) and verified by a HTTP 201 response from POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=13, bringing the cart total to the expected $35.00. It clicked 'Place order' at t=21, and both the t=23 event and final screenshot confirm the order with 'Thank you! Your order is confirmed.' and Order number TS-1014.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 1 Cap to the cart at 00:06 and 1 T-Shirt at 00:13, bringing the total to $35.00. At 00:21, the agent clicked 'Place order', and the order confirmation (Order number: TS-1014) appeared at 00:23.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap at 00:06 and a T-Shirt at 00:13 to the cart, then placed the order at 00:21, receiving an order confirmation (TS-1014) at 00:23.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__none",
+   "task": "cap_and_tee",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 41,
+   "agent": {
+    "success": true,
+    "claim": "I added a Cap and a T-Shirt to the cart and placed the order, which was confirmed with order number TS-1014 for a total of $35.00.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "cap": 1,
+      "tee": 1
+     },
+     "total": 35,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "blind1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=4 and a T-Shirt ($20.00) at t=11 for the expected total of $35.00. The order was placed at t=26 (verified by a 201 POST to /api/order in the network log) and confirmed at t=27 with order number TS-1014, as visible in the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     }
+    },
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=4 and a T-Shirt ($20.00) at t=11 for the correct total of $35.00, and placed the order at t=26. Both the confirmation screen at t=27 (Order TS-1014) and the network log (POST /api/order returning status 201) verify the order succeeded.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=4 and t=11, the agent added 1 Cap ($15.00) and 1 T-Shirt ($20.00) to the cart for the expected total of $35.00. At t=26 the order was placed, and by t=27 (as verified in the final screenshot) the order was confirmed with order number TS-1014.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:04 and 00:11, the agent added one Cap and one T-Shirt to the cart for a total of $35.00. At 00:26, the agent clicked 'Place order', resulting in an order confirmation with order number TS-1014 at 00:27.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Cap to the cart at 00:04 and one T-Shirt at 00:11, bringing the total to $35.00. At 00:27, the order was successfully placed and confirmed with order number TS-1014.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__order_silently_fails",
+   "task": "cap_and_tee",
+   "bug": "order_silently_fails",
+   "agentModel": "gemini-4-argon",
+   "seconds": 35,
+   "agent": {
+    "success": true,
+    "claim": "I added a Cap and a T-Shirt to the cart and placed the order, which is confirmed as order number TS-1014.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "blind1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added a Cap ($15.00 at t=4) and a T-Shirt ($20.00 at t=10) for the correct $35.00 total and clicked 'Place order' at t=21 (showing confirmation TS-1014 at t=22), the session network log contains only the initial 'GET /' request and no order submission request, proving the order was never actually sent to the server.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     }
+    },
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the UI correctly showed a Cap ($15.00) and a T-Shirt ($20.00) totaling $35.00 at t=10 and displayed a confirmation message for order TS-1014 at t=22, the network log contains only a GET / request and no POST /api/order request, proving the order was never actually saved.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added 1 Cap ($15.00) at t=4 and 1 T-Shirt ($20.00) at t=10, bringing the cart total to the expected $35.00. After clicking 'Place order' at t=21, the confirmation message and order number TS-1014 appeared at t=22, matching the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Cap at 00:04 and one T-Shirt at 00:10 to the cart, then placed the order at 00:21. At 00:22, the screen displays 'Thank you! Your order is confirmed. Order number: TS-1014'.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:04, a Cap was added to the cart, and at 00:10, a T-Shirt was added to the cart for a total of $35.00. By 00:22, the order was placed and confirmed with order number TS-1014.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__remove_broken",
+   "task": "cap_and_tee",
+   "bug": "remove_broken",
+   "agentModel": "gemini-4-argon",
+   "seconds": 29,
+   "agent": {
+    "success": true,
+    "claim": "I added a Cap and a T-Shirt to the cart and placed the order, which was confirmed with order number TS-1014.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "cap": 1,
+      "tee": 1
+     },
+     "total": 35,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "blind1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The agent added 1 Cap ($15.00) at t=6 and 1 T-Shirt ($20.00) at t=10 for the correct total of $35.00, as verified in the final screenshot. At t=17-18, the order was placed and confirmed with order number TS-1014, backed by a 201 response on POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     }
+    },
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=10 for a correct total of $35.00, then clicked 'Place order' at t=17. Both the network log (POST /api/order returning status 201) and the confirmation screen at t=18 (Order number: TS-1014) verify the order was successfully placed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Cap ($15.00) at t=6 and one T-Shirt ($20.00) at t=10 for the correct total of $35.00. It placed the order at t=17, and the final screenshot confirms the order was completed at t=18 with order number TS-1014.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:06 and 00:10, the agent added one Cap and one T-Shirt to the cart, bringing the total to $35.00. At 00:17, the agent clicked 'Place order', and at 00:18 the confirmation message appeared with order number TS-1014.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Cap to the cart at 00:06 and one T-Shirt at 00:10, bringing the total to $35.00. At 00:17, the agent clicked 'Place order', and the order confirmation with order number TS-1014 appeared at 00:18.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__rounding_off_by_cent",
+   "task": "cap_and_tee",
+   "bug": "rounding_off_by_cent",
+   "agentModel": "gemini-4-argon",
+   "seconds": 28,
+   "agent": {
+    "success": true,
+    "claim": "I added a Cap and a T-Shirt to the cart and placed the order, which was confirmed with order number TS-1014 and a total of $35.01.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 35.01 (expected 35)"
+   },
+   "orders": [
+    {
+     "items": {
+      "cap": 1,
+      "tee": 1
+     },
+     "total": 35.01,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Based on the listed prices of $15.00 for the Cap and $20.00 for the T-Shirt, the total should be $35.00, but the cart miscalculated the total as $15.01 at t=4 and $35.01 at t=10. The agent proceeded to place the order at t=15 (confirmed at t=16 as TS-1014) despite the $0.01 overcharge.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Based on the listed prices for a Cap ($15.00) and a T-Shirt ($20.00), the total should be $35.00, not $35.01. Adding the Cap at t=4 already showed an incorrect total of $15.01, and the agent proceeded to place the overcharged $35.01 order at t=15 (confirmed at t=16).",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap to the cart at 00:04 and a T-Shirt at 00:10, then placed the order at 00:15. At 00:16, the order confirmation message appeared with order number TS-1014 for both items.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Cap to the cart at 00:04 and one T-Shirt at 00:10, then clicked 'Place order' at 00:15. At 00:16, the page confirmed the order with 'Thank you! Your order is confirmed.' and order number TS-1014.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__total_ignores_qty",
+   "task": "cap_and_tee",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 34,
+   "agent": {
+    "success": true,
+    "claim": "I added a Cap and a T-Shirt to the cart and placed the order, which was confirmed with order number TS-1014.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "cap": 1,
+      "tee": 1
+     },
+     "total": 35,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Cap ($15.00) at t=6 and a T-Shirt ($20.00) at t=12 for the correct total of $35.00, then clicked Place order at t=18. Confirmation TS-1014 appeared at t=19 (visible in the final screenshot), and the network log confirms POST /api/order succeeded with status 201.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=6 and t=12, the agent added 1 Cap ($15.00) and 1 T-Shirt ($20.00) to the cart, correctly bringing the total to $35.00. At t=18, the order was placed, and both the t=19 event and final screenshot confirm the order with number TS-1014.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:06, the agent added a Cap to the cart, and at 00:12, it added a T-Shirt to the cart. At 00:18, the agent clicked 'Place order', resulting in an order confirmation for TS-1014 at 00:19.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:06 a Cap was added to the cart, and at 00:12 a T-Shirt was added for a total of $35.00. At 00:19, the order was placed and confirmed with order number TS-1014.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "cap_and_tee__wrong_item_added",
+   "task": "cap_and_tee",
+   "bug": "wrong_item_added",
+   "agentModel": "gemini-4-argon",
+   "seconds": 27,
+   "agent": {
+    "success": false,
+    "claim": "Unable to add a T-Shirt to the cart due to a bug where clicking 'Add to cart' on T-Shirt adds a Cap instead, and the decrement button for Cap does not work.",
+    "steps": [
+     "click add-cap",
+     "click add-tee",
+     "click dec-cap",
+     "click add-tee"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "The cart should contain a Cap ($15.00) and a T-Shirt ($20.00) totaling $35.00, but at t=21 and in the final screenshot the cart contains Cap x 2 totaling $30.00 (additionally, the Cap quantity successfully decreased at t=16, contradicting the agent's claim). Furthermore, no order was placed, as evidenced by the lack of a confirmation screen and the absence of a POST /api/order request in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "The task required buying a Cap ($15.00) and a T-Shirt ($20.00) for a total of $35.00, but the final screenshot and state at t=21 show 2 Caps in the cart totaling $30.00 with no order placed. Additionally, contrary to the agent's claim, decreasing the Cap quantity worked properly at t=16.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "Only Caps were added to the cart (reaching a quantity of 2 at 00:11 and 00:21), no T-Shirt was ever added, and the 'Place order' button was never clicked before the video ended at 00:27.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    },
+    "r2": {
+     "single": {
+      "task_succeeded": false,
+      "evidence": "The agent never added a T-Shirt to the cart or clicked 'Place order'; instead, the cart only contained 1 Cap at 00:05 and 00:16, and ended at 00:27 with 2 Caps in an unplaced cart.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__checkout_always_disabled",
+   "task": "fallback_code",
+   "bug": "checkout_always_disabled",
+   "agentModel": "gemini-4-argon",
+   "seconds": 57,
+   "agent": {
+    "success": false,
+    "claim": "I added one Coffee Mug to the cart, tried WELCOME, then applied discount code SAVE10 for a 10% discount, but could not complete the purchase because the 'Place order' button is disabled.",
+    "steps": [
+     "click add-mug",
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added the Coffee Mug at t=25, tried WELCOME at t=35, and applied SAVE10 at t=49 for the correct $10.80 total, the purchase was never completed. The final screenshot shows the 'Place order' button disabled with no confirmation, and the network log contains no POST /api/order request.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added one Coffee Mug at t=25, tried WELCOME at t=35, and applied SAVE10 at t=49 to reach the correct $10.80 total, the 'Place order' button remained disabled throughout and no order confirmation was ever generated.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added one Coffee Mug at 00:25, tried WELCOME at 00:35, and applied SAVE10 at 00:49, the 'Place order' button remained disabled throughout the video (up to 00:56), so the item was never actually purchased.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__discount_not_applied",
+   "task": "fallback_code",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 49,
+   "agent": {
+    "success": true,
+    "claim": "I tried the WELCOME discount code which failed, applied SAVE10 for a 10% discount (though the displayed total remained $12.00), and bought one Coffee Mug under order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 12 (expected 10.8)"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "One Coffee Mug ($12.00) with a 10% discount from SAVE10 should total $10.80, not $12.00. Although '10% discount applied' appeared at t=28 and POST /api/order succeeded (status 201) at t=36-37 for order TS-1007, the total remained $12.00, meaning the order was placed at full price without the discount actually taking effect.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "A Coffee Mug costs $12.00, so with the 10% discount from SAVE10 applied at t=28, the total should have been $10.80. However, both the timeline (t=28 to t=37) and final screenshot show the total remained $12.00 when order TS-1007 was placed, meaning the discount was never actually deducted.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Coffee Mug to the cart at 00:04, tried the WELCOME code which showed 'Invalid code' at 00:17, and then applied SAVE10 which showed '10% discount applied' at 00:28. Finally, the agent placed the order at 00:36 and received order confirmation TS-1007 at 00:37.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__none",
+   "task": "fallback_code",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 72,
+   "agent": {
+    "success": true,
+    "claim": "I tried the WELCOME discount code which did not work, applied SAVE10 for a 10% discount, and purchased one Coffee Mug for $10.80 (Order number: TS-1007).",
+    "steps": [
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click add-mug",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 10.8,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=10, the agent tried code WELCOME which returned 'Invalid code', then applied SAVE10 at t=39 for a 10% discount and added one $12.00 Coffee Mug at t=45 for a correct total of $10.80. At t=50-51, the order was placed and confirmed (Order TS-1007), verified by the final screenshot and a 201 status on POST /api/order.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=10, the agent tried code WELCOME ('Invalid code'), then applied SAVE10 at t=39 for a 10% discount, and added one $12.00 Coffee Mug at t=45 bringing the total to $10.80. The order was confirmed at t=51 and in the final screenshot with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:06-00:10, the agent tried the discount code WELCOME and received an 'Invalid code' message, then applied SAVE10 at 00:39 to get a 10% discount. At 00:45-00:51, the agent added one Coffee Mug to the cart for a discounted total of $10.80 and confirmed the order (Order number: TS-1007).",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__order_silently_fails",
+   "task": "fallback_code",
+   "bug": "order_silently_fails",
+   "agentModel": "gemini-4-argon",
+   "seconds": 43,
+   "agent": {
+    "success": true,
+    "claim": "I tried the discount code WELCOME which did not work, applied SAVE10 for a 10% discount, and purchased one Coffee Mug for $10.80 (Order number: TS-1007).",
+    "steps": [
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click add-mug",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the agent applied SAVE10 after WELCOME failed (t=5 to t=19), added one Coffee Mug for $10.80 (t=23), and saw an on-screen confirmation after clicking Place order (t=29 to t=30), the network log contains only a GET / request and no POST /api/order request, proving the order was never actually saved.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=11, the agent tried 'WELCOME' which showed 'Invalid code', then applied 'SAVE10' at t=19 for a 10% discount. At t=23, one $12.00 Coffee Mug was added for a correct discounted total of $10.80, and at t=30 the order was confirmed with order number TS-1007 (matching the final screenshot).",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:05-00:11, the agent tried the discount code WELCOME which resulted in 'Invalid code', then applied SAVE10 at 00:15-00:19 for a 10% discount. At 00:23, the agent added one Coffee Mug to the cart for a discounted total of $10.80 and confirmed the order at 00:30 (Order number: TS-1007).",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__remove_broken",
+   "task": "fallback_code",
+   "bug": "remove_broken",
+   "agentModel": "gemini-4-argon",
+   "seconds": 99,
+   "agent": {
+    "success": true,
+    "claim": "I tried the discount code WELCOME which did not work, so I applied SAVE10 for a 10% discount and purchased one Coffee Mug for $10.80 (Order number: TS-1007).",
+    "steps": [
+     "click add-mug",
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 10.8,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added one $12.00 Coffee Mug (t=9), tried code WELCOME which returned 'Invalid code' (t=67), and then applied SAVE10 to get the expected 10% discounted total of $10.80 (t=77). The order was confirmed on screen at t=83 (Order TS-1007) and verified by a successful HTTP 201 response to POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=13 and t=67, the agent tested discount code WELCOME which returned 'Invalid code', then applied SAVE10 at t=77 reducing the single $12.00 Coffee Mug to $10.80. At t=82-83 and in the final screenshot, the order was confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Coffee Mug to the cart at 00:09, tested the discount code 'WELCOME' which showed 'Invalid code' at 01:07, and then successfully applied 'SAVE10' at 01:17 to bring the total to $10.80. Finally, the agent placed the order and received confirmation (Order number: TS-1007) at 01:23.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__rounding_off_by_cent",
+   "task": "fallback_code",
+   "bug": "rounding_off_by_cent",
+   "agentModel": "gemini-4-argon",
+   "seconds": 47,
+   "agent": {
+    "success": true,
+    "claim": "I tried the discount code WELCOME which did not work, applied SAVE10 for a 10% discount, and successfully purchased one Coffee Mug (Order number: TS-1007).",
+    "steps": [
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click add-mug",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 10.81 (expected 10.8)"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 10.81,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "A Coffee Mug costs $12.00, so with the 10% SAVE10 discount applied at t=22, the total should be $10.80. However, from t=27 through order confirmation at t=33 (and in the final screenshot), the cart incorrectly calculated and charged a total of $10.81.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Although the agent tried WELCOME (invalid at t=9), applied SAVE10 for a 10% discount (t=22), and placed order TS-1007 for one $12.00 Coffee Mug (t=27, t=33), the total charged on screen was $10.81 instead of the correct 10%-discounted price of $10.80.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent entered 'WELCOME' and received an 'Invalid code' message at 00:09, then applied 'SAVE10' for a 10% discount at 00:22. Finally, it added one Coffee Mug to the cart at 00:27 and placed the order, receiving confirmation TS-1007 at 00:33.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__total_ignores_qty",
+   "task": "fallback_code",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 67,
+   "agent": {
+    "success": true,
+    "claim": "I tried the WELCOME discount code which failed, applied SAVE10 for a 10% discount, and purchased one Coffee Mug for $10.80 (Order number: TS-1007).",
+    "steps": [
+     "click add-mug",
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 10.8,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=18, the agent tested 'WELCOME' which showed 'Invalid code', and at t=31 applied 'SAVE10' to bring the $12.00 Coffee Mug down to $10.80. The order was confirmed at t=43 (Order TS-1007) as shown in the final screenshot, and verified by the HTTP 201 response from POST /api/order.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=18, the agent tested 'WELCOME' which returned 'Invalid code', and at t=31 applied 'SAVE10' to correctly discount one $12.00 Coffee Mug by 10% to $10.80. At t=41-43 and in the final screenshot, the order was placed and confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added one Coffee Mug to the cart at 00:07, tried the 'WELCOME' code which returned 'Invalid code' at 00:18, and then successfully applied 'SAVE10' at 00:31 to reduce the total to $10.80. Finally, the order was placed and confirmed with order number TS-1007 at 00:43.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "fallback_code__wrong_item_added",
+   "task": "fallback_code",
+   "bug": "wrong_item_added",
+   "agentModel": "gemini-4-argon",
+   "seconds": 54,
+   "agent": {
+    "success": true,
+    "claim": "I tried the discount code WELCOME which did not work, applied SAVE10 for a 10% discount, and successfully purchased one Coffee Mug for $10.80 (Order number: TS-1007).",
+    "steps": [
+     "fill discount-input \"WELCOME\"",
+     "click apply-discount",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click add-mug",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 10.8,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=10, the agent tried WELCOME which returned 'Invalid code', then applied SAVE10 at t=21 for a 10% discount and added one $12.00 Coffee Mug at t=29 for a correct total of $10.80. The order was confirmed at t=41 (Order TS-1007) as shown in the final screenshot and verified by the HTTP 201 response on POST /api/order.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent tried 'WELCOME' at t=5-10 ('Invalid code') and then applied 'SAVE10' at t=16-21 for a 10% discount. At t=29 it added one $12.00 Coffee Mug for a correct discounted total of $10.80, and at t=40-41 placed the order, with the final screenshot confirming Order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:05-00:10, the agent tried the code WELCOME and received an 'Invalid code' message, then applied SAVE10 at 00:16-00:21 for a 10% discount. At 00:29, one Coffee Mug was added to the cart for a discounted total of $10.80, and the order was confirmed as TS-1007 at 00:41.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__checkout_always_disabled",
+   "task": "one_tee",
+   "bug": "checkout_always_disabled",
+   "agentModel": "gemini-4-argon",
+   "seconds": 11,
+   "agent": {
+    "success": false,
+    "claim": "I added one T-Shirt to the cart, but could not complete the purchase because the 'Place order' button remained disabled.",
+    "steps": [
+     "click add-tee"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "At t=4, the agent added 1 T-Shirt to the cart for the expected total of $20.00, but the 'Place order' button remained disabled as seen in the final screenshot. No order confirmation appeared and the network log contains no POST /api/order request, confirming the purchase was not completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "At t=4, the agent added 1 T-Shirt to the cart for the correct total of $20.00, as shown in the timeline and final screenshot. However, the 'Place order' button remained disabled and no order confirmation appeared, meaning the purchase was not completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "At 00:04, one T-Shirt is added to the cart, updating the total to $20.00. However, from 00:04 through 00:11, the 'Place order' button remains greyed out and disabled, so the order is never placed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__discount_not_applied",
+   "task": "one_tee",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 28,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=7, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=13-14 the order was placed and confirmed as TS-1007. Both the final screenshot and the network log (POST /api/order returning status 201) verify that the order was genuinely completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=7, the agent added one T-Shirt ($20.00) to the cart, resulting in the correct total of $20.00. After clicking 'Place order' at t=13, the order was confirmed at t=14 (and shown in the final screenshot) with 'Thank you! Your order is confirmed.' and order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:07, one T-Shirt is added to the cart for a total of $20.00. At 00:13, the agent clicks 'Place order', and at 00:14, the order is confirmed with order number TS-1007.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__none",
+   "task": "one_tee",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 29,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, resulting in order confirmation TS-1007 for $20.00.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=5, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=9-10 the order was placed and confirmed as TS-1007 (matching the final screenshot). The network log confirms the order was saved via a successful POST /api/order returning status 201.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=5, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00. After clicking 'Place order' at t=9, the order completed at t=10, and the final screenshot confirms 'Thank you! Your order is confirmed.' with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:05, one T-Shirt ($20.00) was added to the cart, and at 00:10 the order was confirmed with order number TS-1007 after clicking 'Place order'.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__order_silently_fails",
+   "task": "one_tee",
+   "bug": "order_silently_fails",
+   "agentModel": "gemini-4-argon",
+   "seconds": 24,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the UI showed an order confirmation for one $20.00 T-Shirt (order TS-1007) at t=8 after clicking 'Place order' at t=6, the network log contains only a GET / request and no POST /api/order request, meaning the order was never actually saved.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=3, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=6 the order was placed. By t=8 and in the final screenshot, the order confirmation message and order number TS-1007 are clearly displayed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:03, one T-Shirt ($20.00) is added to the cart. The agent clicks 'Place order' at 00:06, and at 00:08 the confirmation message 'Thank you! Your order is confirmed. Order number: TS-1007' appears.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__remove_broken",
+   "task": "one_tee",
+   "bug": "remove_broken",
+   "agentModel": "gemini-4-argon",
+   "seconds": 24,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=4, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=12 the order was placed, confirmed at t=13 with order number TS-1007 on screen. The network log verifies the order was saved with a successful POST /api/order (status 201).",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=4, one T-Shirt priced at $20.00 was added to the cart for a correct total of $20.00. After clicking 'Place order' at t=12, the order was confirmed at t=13 (and verified in the final screenshot) with 'Thank you! Your order is confirmed.' and order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:04, one T-Shirt was added to the cart for $20.00. At 00:13, after clicking 'Place order', the confirmation message appeared with order number TS-1007.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__rounding_off_by_cent",
+   "task": "one_tee",
+   "bug": "rounding_off_by_cent",
+   "agentModel": "gemini-4-argon",
+   "seconds": 28,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007 for a total of $20.01.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 20.01 (expected 20)"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20.01,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "The listed price for one T-Shirt in the final screenshot is $20.00, so the cart total should be $20.00, not $20.01. However, from t=6 through order confirmation at t=14, the screen showed an incorrect total of $20.01, meaning the order (POST /api/order status 201) was placed with an overcharged amount.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "One T-Shirt is priced at $20.00 on screen, so the total should be $20.00, not $20.01. At t=6 the cart total erroneously showed $20.01, and at t=13-14 the agent placed the order anyway, overpaying for order TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:06, one T-Shirt is added to the cart, and after clicking 'Place order' at 00:13, the order confirmation message ('Order number: TS-1007') appears at 00:14.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__total_ignores_qty",
+   "task": "one_tee",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 71,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=6, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=51-52 the order was placed and confirmed with order number TS-1007 as shown in the final screenshot. The network log confirms the order was saved with a 201 status on POST /api/order.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=6, the agent added one T-Shirt ($20.00) to the cart, resulting in the correct total of $20.00. At t=51, the agent clicked 'Place order', and at t=52 (and in the final screenshot), the order confirmation appeared with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:06, the agent added one T-Shirt ($20.00) to the cart. At 00:51, the agent clicked 'Place order', and at 00:52 the order was confirmed with order number TS-1007.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "one_tee__wrong_item_added",
+   "task": "one_tee",
+   "bug": "wrong_item_added",
+   "agentModel": "gemini-4-argon",
+   "seconds": 38,
+   "agent": {
+    "success": false,
+    "claim": "Unable to add the T-Shirt to the cart or remove the Cap because the cart buttons are unresponsive or misconfigured.",
+    "steps": [
+     "click add-tee",
+     "click remove-cap",
+     "click add-tee",
+     "click dec-cap",
+     "click add-cap"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "The agent repeatedly added and removed a Cap ($15.00) at t=6, t=11, t=18, t=25, and t=32 instead of adding the T-Shirt ($20.00), leaving only 1 Cap in the cart in the final screenshot. Furthermore, no order was placed, as evidenced by the absence of a POST /api/order request in the network log and no order confirmation on screen.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "The task required buying one T-Shirt for $20.00, but the agent repeatedly added and removed the Cap (at t=6, t=11, t=18, t=25, and t=32) and never added the T-Shirt. The final screenshot shows a Cap in the cart for $15.00 with no order placed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "Throughout the recording, the agent repeatedly adds and removes a Cap instead of a T-Shirt (e.g., adding Cap at 00:06, 00:18, and 00:32, and removing it at 00:11 and 00:25). By the end of the video at 00:37, the T-Shirt is never added to the cart and no order is placed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__checkout_always_disabled",
+   "task": "remove_then_buy",
+   "bug": "checkout_always_disabled",
+   "agentModel": "gemini-4-argon",
+   "seconds": 22,
+   "agent": {
+    "success": false,
+    "claim": "I added the Coffee Mug and Cap to the cart and removed the Cap, but could not complete the purchase because the Place order button is disabled.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added the Coffee Mug (t=6) and Cap (t=12) and removed the Cap (t=16) leaving the correct $12.00 total, the 'Place order' button remained disabled throughout and in the final screenshot. Consequently, no POST /api/order request was sent in the network log and the purchase was never completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "The agent added the Coffee Mug at t=6, added the Cap at t=12, and removed the Cap at t=16 leaving the expected $12.00 total, but failed to buy the item. As shown in the timeline and final screenshot, the 'Place order' button remained disabled throughout and no order confirmation was generated.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "The agent added the Coffee Mug at 00:06, added the Cap at 00:12, and removed the Cap at 00:16. However, the 'Place order' button remained disabled and greyed out through the end of the video at 00:22, preventing the final purchase step from being completed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__discount_not_applied",
+   "task": "remove_then_buy",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 36,
+   "agent": {
+    "success": true,
+    "claim": "I added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the remaining Coffee Mug ($12.00), receiving order confirmation TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=4 and Cap at t=11, removed the Cap at t=17 leaving 1 Coffee Mug correctly totaling $12.00, and placed the order at t=22. Order confirmation TS-1007 appeared at t=23 (verified in the final screenshot) and the network log confirms POST /api/order succeeded with status 201.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug at t=4 and a Cap at t=11, then removed the Cap at t=17 leaving 1 Coffee Mug for the expected total of $12.00. At t=22 the order was placed, and both t=23 and the final screenshot confirm order TS-1007 was completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug at 00:04 and a Cap at 00:11, removed the Cap at 00:17 leaving only the Coffee Mug ($12.00), and successfully placed the order at 00:22, receiving confirmation TS-1007 at 00:23.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__none",
+   "task": "remove_then_buy",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 35,
+   "agent": {
+    "success": true,
+    "claim": "I added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the remaining Coffee Mug ($12.00), receiving confirmation for order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=3 and the Cap at t=6, removed the Cap at t=14 leaving 1 Coffee Mug for the expected total of $12.00, and placed the order at t=19. The order was confirmed at t=20 (Order TS-1007 in the final screenshot) and verified by a successful 201 status on POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug ($12.00) at t=3 and the Cap ($15.00) at t=6, then removed the Cap at t=14, leaving only 1 Coffee Mug for the expected total of $12.00. At t=19 the order was placed, and both the timeline at t=20 and the final screenshot confirm the completed order with number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at 00:03 and the Cap at 00:06, then removed the Cap at 00:14 leaving only the Coffee Mug ($12.00). Finally, the agent placed the order at 00:19 and received confirmation for order TS-1007 at 00:20.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__order_silently_fails",
+   "task": "remove_then_buy",
+   "bug": "order_silently_fails",
+   "agentModel": "gemini-4-argon",
+   "seconds": 40,
+   "agent": {
+    "success": true,
+    "claim": "I added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the Coffee Mug ($12.00 total), receiving order confirmation number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the UI matched the expected $12.00 Coffee Mug cart and displayed order confirmation TS-1007 at t=29 after clicking Place order at t=28, the order was not actually placed. The session network log contains only a GET / request and no successful POST /api/order request.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The timeline shows the Coffee Mug added at t=6, the Cap added at t=11 (totaling $27.00), and the Cap removed at t=19 leaving 1 Coffee Mug for the expected total of $12.00. The order was placed at t=28 and confirmed at t=29 (matching the final screenshot) with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at 00:06 and the Cap at 00:11, then removed the Cap at 00:19, leaving only the Coffee Mug ($12.00). Finally, the order was placed at 00:28 and confirmed as order TS-1007 at 00:29.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__remove_broken",
+   "task": "remove_then_buy",
+   "bug": "remove_broken",
+   "agentModel": "gemini-4-argon",
+   "seconds": 35,
+   "agent": {
+    "success": true,
+    "claim": "Added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the Coffee Mug totaling $12.00, resulting in confirmed order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click dec-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=5 and the Cap at t=10, removed the Cap at t=19 leaving the Coffee Mug correctly totaling $12.00, and placed the order at t=23. Order confirmation TS-1007 was displayed at t=24 and verified by a successful POST /api/order (status 201) in the network log and the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug ($12.00) at t=5 and a Cap ($15.00) at t=10, then removed the Cap at t=19 leaving 1 Coffee Mug with a correct total of $12.00. At t=23 the order was placed, and both the timeline (t=24) and final screenshot confirm the order with number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug at 00:05 and a Cap at 00:10, removed the Cap at 00:19, and placed the order for the remaining Coffee Mug ($12.00) at 00:23, receiving order confirmation TS-1007 at 00:24.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__rounding_off_by_cent",
+   "task": "remove_then_buy",
+   "bug": "rounding_off_by_cent",
+   "agentModel": "gemini-4-argon",
+   "seconds": 35,
+   "agent": {
+    "success": true,
+    "claim": "I added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the remaining Coffee Mug, receiving order number TS-1007 for a total of $12.01 (note: a $0.01 pricing discrepancy occurred for the $12.00 item).",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 12.01 (expected 12)"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12.01,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added the Coffee Mug at t=5, added the Cap at t=9, removed the Cap at t=15, and placed order TS-1007 at t=21-22 (confirmed by POST /api/order returning 201), the order was not completed correctly because the total charged was $12.01 instead of the listed $12.00 price for a single Coffee Mug (visible at t=5, t=15, t=22, and in the final screenshot).",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added the Coffee Mug at t=5, added the Cap at t=9, removed the Cap at t=15, and placed order TS-1007 at t=21-22, the listed price for one Coffee Mug is $12.00 so the total should be $12.00. Instead, the cart displayed and charged an incorrect total of $12.01 from t=5 through final confirmation at t=22.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug at 00:05 and a Cap at 00:09, removed the Cap at 00:15, and successfully placed the order for the remaining Coffee Mug, receiving confirmation TS-1007 at 00:22.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__total_ignores_qty",
+   "task": "remove_then_buy",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 45,
+   "agent": {
+    "success": true,
+    "claim": "I added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the remaining Coffee Mug ($12.00), receiving confirmation for order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The timeline shows the agent added the Coffee Mug at t=7, added the Cap at t=11, removed the Cap at t=21 leaving 1 Coffee Mug for the correct total of $12.00, and placed the order at t=26. Order completion is confirmed at t=28 in the UI (order TS-1007 in the final screenshot) and backed by a 201 status on POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The timeline shows the agent added a Coffee Mug at t=7 and a Cap at t=11, then removed the Cap at t=21 leaving 1 Coffee Mug for the expected total of $12.00. At t=26 the order was placed, and both the t=28 event and final screenshot confirm order TS-1007 was completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at 00:07 and the Cap at 00:11, then removed the Cap at 00:21 leaving only the Coffee Mug ($12.00). At 00:26, the agent placed the order and received confirmation for order TS-1007 at 00:28.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "remove_then_buy__wrong_item_added",
+   "task": "remove_then_buy",
+   "bug": "wrong_item_added",
+   "agentModel": "gemini-4-argon",
+   "seconds": 44,
+   "agent": {
+    "success": true,
+    "claim": "I added a Coffee Mug and a Cap to the cart, removed the Cap, and placed the order for the remaining Coffee Mug, receiving order number TS-1007 for $12.00.",
+    "steps": [
+     "click add-mug",
+     "click add-cap",
+     "click remove-cap",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 1
+     },
+     "total": 12,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=4 and Cap at t=10, then removed the Cap at t=16, leaving 1 Coffee Mug for the correct total of $12.00. The order was placed at t=21, confirmed at t=22 with order number TS-1007 (matching the final screenshot), and verified by the 201 response to POST /api/order.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=4 and the Cap at t=10, then removed the Cap at t=16 leaving only the Coffee Mug for the correct total of $12.00. At t=21 the order was placed, and both t=22 and the final screenshot confirm the order succeeded with confirmation number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug at 00:04 and a Cap at 00:10, then removed the Cap at 00:16. Finally, the agent clicked 'Place order' at 00:21, confirming order TS-1007 for the remaining Coffee Mug ($12.00) at 00:22.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__checkout_always_disabled",
+   "task": "three_tees_discount",
+   "bug": "checkout_always_disabled",
+   "agentModel": "gemini-4-argon",
+   "seconds": 46,
+   "agent": {
+    "success": false,
+    "claim": "Added 3 T-Shirts to the cart and applied discount code SAVE10 for a total of $54.00, but could not complete the purchase because the Place order button is disabled.",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added 3 T-Shirts (t=20) and applied the SAVE10 discount for the correct total of $54.00 (t=39), the purchase was never completed. As seen in the final screenshot and network log, the 'Place order' button remained disabled and no POST /api/order request was made.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Although the agent correctly added 3 T-Shirts at $20.00 each by t=20 and applied the SAVE10 discount to reach the correct $54.00 total at t=39, the purchase was never completed. As seen in the timeline at t=39 and the final screenshot, the 'Place order' button remained disabled and no order confirmation was generated.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "The agent added 3 T-Shirts to the cart by 00:20 and applied the discount code SAVE10 at 00:39 to bring the total to $54.00. However, the 'Place order' button remained disabled throughout the entire recording up to 00:46, so the purchase could not be completed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__discount_not_applied",
+   "task": "three_tees_discount",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 46,
+   "agent": {
+    "success": true,
+    "claim": "I placed an order for 3 T-Shirts with the discount code SAVE10 applied, resulting in confirmed order number TS-1007 (note: the store displayed '10% discount applied' but still charged the full $60.00 total).",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 60 (expected 54)"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 3
+     },
+     "total": 60,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $60.00. Although '10% discount applied' appeared at t=23 and POST /api/order succeeded (status 201) at t=30, the final screenshot and timeline show the order was placed for the full undiscounted total of $60.00.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $60.00. Although '10% discount applied' appeared at t=23, the total remained $60.00 when the agent placed the order at t=28 (confirmed at t=30 and in the final screenshot), meaning the discount was not actually applied to the price.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "Although the agent entered SAVE10 and saw '10% discount applied' at 00:23, the cart total remained at the full price of $60.00 instead of $54.00 when the order was placed and confirmed at 00:28–00:30. Consequently, the purchase was completed at full price without the discount actually being applied to the total.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__none",
+   "task": "three_tees_discount",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 55,
+   "agent": {
+    "success": true,
+    "claim": "I bought 3 T-Shirts with the discount code SAVE10 for a total of $54.00, and the order was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 3
+     },
+     "total": 54,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=26 and t=37, the agent correctly set the cart to 3 T-Shirts ($20.00 each) and applied discount code SAVE10 for a verified total of $54.00. At t=41-42, the order was placed and confirmed on screen (Order TS-1007), backed by a successful POST /api/order (status 201) in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "Three T-Shirts at $20.00 each correctly totaled $60.00 at t=26, and applying the SAVE10 code at t=37 properly applied a 10% discount to bring the total to $54.00. At t=42 and in the final screenshot, the order is confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:26, the cart shows 3 T-Shirts for $60.00, and at 00:37, the discount code SAVE10 is applied, reducing the total to $54.00. At 00:42, after clicking 'Place order', the confirmation message 'Thank you! Your order is confirmed. Order number: TS-1007' appears.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__order_silently_fails",
+   "task": "three_tees_discount",
+   "bug": "order_silently_fails",
+   "agentModel": "gemini-4-argon",
+   "seconds": 50,
+   "agent": {
+    "success": true,
+    "claim": "I bought 3 T-Shirts with the discount code SAVE10 for a total of $54.00, and the order is confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the UI correctly calculated $54.00 for 3 T-Shirts with SAVE10 at t=26 and showed an order confirmation at t=33 after clicking 'Place order' at t=31, the network log only contains a GET / request with no POST /api/order request, meaning the order was never actually saved.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=15 the cart had 3 T-Shirts ($60.00), and at t=26 applying discount code SAVE10 correctly reduced the total by 10% to $54.00. At t=33 and in the final screenshot, the order was confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 3 T-Shirts to the cart by 00:15, applied the discount code 'SAVE10' at 00:26 reducing the total to $54.00, and placed the order, receiving confirmation number TS-1007 at 00:33.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__remove_broken",
+   "task": "three_tees_discount",
+   "bug": "remove_broken",
+   "agentModel": "gemini-4-argon",
+   "seconds": 39,
+   "agent": {
+    "success": true,
+    "claim": "I bought 3 T-Shirts with the discount code SAVE10 for a total of $54.00, and the order was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 3
+     },
+     "total": 54,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=15 and t=23, 3 T-Shirts ($20.00 each) were in the cart with the SAVE10 discount applied, bringing the total from $60.00 to the correct $54.00. At t=28–29, the order was placed and confirmed as TS-1007 on screen, backed by a 201 status on POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=15, the agent set the T-Shirt ($20.00 each) quantity to 3 ($60.00 subtotal), and at t=23 applied discount code SAVE10 to correctly update the total to $54.00 (10% off). At t=28-29 and in the final screenshot, the order was placed and confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 3 T-Shirts to the cart by 00:15, entered and applied the discount code SAVE10 at 00:23 reducing the total to $54.00, and placed the order which was confirmed at 00:29 with order number TS-1007.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__rounding_off_by_cent",
+   "task": "three_tees_discount",
+   "bug": "rounding_off_by_cent",
+   "agentModel": "gemini-4-argon",
+   "seconds": 51,
+   "agent": {
+    "success": true,
+    "claim": "I bought 3 T-Shirts with the discount code SAVE10 applied, resulting in a confirmed order (TS-1007) for a total of $54.01.",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 54.01 (expected 54)"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 3
+     },
+     "total": 54.01,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount should cost $54.00, not $54.01. The timeline shows an erroneous extra $0.01 added to the cart total starting at t=4 ($20.01) through t=14 ($60.01), resulting in an overcharged order of $54.01 confirmed at t=37.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $54.01. An extra $0.01 was erroneously added to the subtotal starting at t=4 ($20.01 for 1 T-Shirt, $60.01 for 3 at t=14), resulting in an incorrect final order total of $54.01 at t=28 and t=37.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 3 T-Shirts to the cart by 00:14, entered and applied the discount code SAVE10 by 00:28 ('10% discount applied', bringing the total to $54.01), and placed the order at 00:35, receiving order confirmation TS-1007 at 00:37.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__total_ignores_qty",
+   "task": "three_tees_discount",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 86,
+   "agent": {
+    "success": true,
+    "claim": "I ordered 3 T-Shirts using the discount code SAVE10, and the order was confirmed with order number TS-1007 for a total of $18.00.",
+    "steps": [
+     "click add-tee",
+     "click inc-tee",
+     "click inc-tee",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 18 (expected 54)"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 3
+     },
+     "total": 18,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount should total $54.00, not $18.00. When the agent increased the quantity at t=22 and t=29, the cart total failed to update from $20.00, resulting in an incorrect final order total of $18.00 at t=72.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "A T-Shirt costs $20.00, so 3 T-Shirts with a 10% discount (SAVE10) should total $54.00. However, clicking the '+' button at t=22 and t=29 failed to update the $20.00 subtotal, resulting in an incorrect final total of $18.00 (only charging for 1 T-Shirt) when the order was confirmed at t=72.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "When the agent increased the T-Shirt ($20.00 each) quantity to 2 at 00:22 and 3 at 00:29 using the '+' button, the cart total remained stuck at $20.00 instead of updating to $60.00. After applying SAVE10 at 01:07 and placing the order at 01:12, the confirmed total was $18.00 (the discounted price for just 1 T-Shirt rather than $54.00 for 3).",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "three_tees_discount__wrong_item_added",
+   "task": "three_tees_discount",
+   "bug": "wrong_item_added",
+   "agentModel": "gemini-4-argon",
+   "seconds": 57,
+   "agent": {
+    "success": false,
+    "claim": "The web store is unresponsive and fails to add T-Shirts to the cart or remove the Cap.",
+    "steps": [
+     "click add-tee",
+     "click remove-cap",
+     "click add-tee",
+     "click dec-cap",
+     "click add-tee"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "The agent repeatedly added (t=4, t=21, t=52) and successfully removed (t=11, t=41) a Cap instead of adding 3 T-Shirts ($20.00 each) and applying code SAVE10. The final screenshot shows 1 Cap in the cart ($15.00 total) with no discount applied, and the network log confirms no POST /api/order request was ever made.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "The agent failed to buy 3 T-Shirts ($20.00 each) with code SAVE10 and never placed an order, leaving the final screen with 1 Cap ($15.00) in the cart and no confirmation. Furthermore, the timeline disproves the agent's claim of an unresponsive store, showing it repeatedly added a Cap (t=4, t=21, t=52) and successfully removed it (t=11, t=41).",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "The agent never added any T-Shirts, entered the discount code SAVE10, or placed an order; instead, it repeatedly added a Cap to the cart (at 00:04, 00:21, and 00:52) and removed it (at 00:11 and 00:41).",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__checkout_always_disabled",
+   "task": "two_mugs_discount",
+   "bug": "checkout_always_disabled",
+   "agentModel": "gemini-4-argon",
+   "seconds": 30,
+   "agent": {
+    "success": false,
+    "claim": "Added 2 Coffee Mugs to the cart and applied the SAVE10 discount code, but could not complete the purchase because the 'Place order' button is disabled.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although 2 Coffee Mugs were added by t=10 and the SAVE10 discount was applied at t=21 bringing the total to the expected $21.60, the 'Place order' button remained disabled in the final screenshot. Furthermore, the network log contains no POST /api/order request and no order confirmation was shown, confirming the purchase was not completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Although the agent correctly set the cart to 2 Coffee Mugs (t=10) and applied the SAVE10 code to reach the expected $21.60 total (t=21), the purchase was never completed. As shown throughout the timeline (t=5 to t=21) and in the final screenshot, the 'Place order' button remained disabled and no order confirmation or order number was generated.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "The agent added 2 Coffee Mugs to the cart by 00:10 and applied the SAVE10 discount code at 00:21, reducing the total to $21.60. However, the 'Place order' button remained disabled through the end of the recording at 00:30, so the purchase was never completed.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": false,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__discount_not_applied",
+   "task": "two_mugs_discount",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 110,
+   "agent": {
+    "success": true,
+    "claim": "Purchased 2 Coffee Mugs with the discount code SAVE10 applied (though the total remained $24.00 despite the '10% discount applied' message) and received order confirmation TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 24 (expected 21.6)"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 2
+     },
+     "total": 24,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount (SAVE10) should total $21.60, not $24.00. Although '10% discount applied' appeared after clicking Apply at t=88, the total remained $24.00 when the agent placed the order at t=93 and received confirmation at t=94, meaning the discount was not actually applied to the purchase.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount (SAVE10) should total $21.60, not $24.00. At t=88, clicking Apply displayed '10% discount applied' while leaving the total unchanged at $24.00, and the agent proceeded to place order TS-1007 at full price at t=93-94.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "At 01:13, the agent set the Coffee Mug quantity to 2 ($24.00 total) and applied code SAVE10 at 01:28, which showed '10% discount applied' but failed to reduce the total from $24.00 to $21.60. Despite the discount not being deducted from the total, the agent proceeded to place the order at full price at 01:33-01:34 (order TS-1007).",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__none",
+   "task": "two_mugs_discount",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 77,
+   "agent": {
+    "success": true,
+    "claim": "I bought 2 Coffee Mugs using the discount code SAVE10 for a total of $21.60, and the order is confirmed with order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 2
+     },
+     "total": 21.6,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=12, 2 Coffee Mugs ($12.00 each) totaled $24.00, and applying SAVE10 at t=37 properly reduced the total by 10% to $21.60. The order was confirmed as TS-1007 at t=41 (matching the final screenshot), and the network log confirms POST /api/order succeeded with status 201.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=12 the agent set the Coffee Mug ($12.00 each) quantity to 2 for a $24.00 subtotal, and at t=37 applied code SAVE10 (10% off) bringing the total to the expected $21.60. At t=41 and in the final screenshot, the order is confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 2 Coffee Mugs to the cart by 00:12, entered and applied the discount code SAVE10 at 00:37 reducing the total to $21.60, and successfully placed the order at 00:41 with confirmation number TS-1007.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__order_silently_fails",
+   "task": "two_mugs_discount",
+   "bug": "order_silently_fails",
+   "agentModel": "gemini-4-argon",
+   "seconds": 50,
+   "agent": {
+    "success": true,
+    "claim": "Purchased 2 Coffee Mugs with the SAVE10 discount code applied for a total of $21.60, receiving order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "no order reached the server"
+   },
+   "orders": [],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Although the UI showed 2 Coffee Mugs with the SAVE10 discount ($21.60) and displayed confirmation TS-1007 after clicking Place order at t=33-35, the network log contains only GET / (status 200) and no POST /api/order request, meaning the order was never actually saved.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "At t=14, 2 Coffee Mugs ($12.00 each) were in the cart for $24.00, and at t=29 the SAVE10 code was applied to correctly bring the total to $21.60. The order was placed at t=33 and confirmed at t=35 (and in the final screenshot) with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added a Coffee Mug to the cart at 00:06, increased the quantity to 2 at 00:14, applied the discount code SAVE10 at 00:29 (reducing the total to $21.60), and confirmed the order (TS-1007) at 00:35.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__remove_broken",
+   "task": "two_mugs_discount",
+   "bug": "remove_broken",
+   "agentModel": "gemini-4-argon",
+   "seconds": 36,
+   "agent": {
+    "success": true,
+    "claim": "I bought 2 Coffee Mugs using the discount code SAVE10 for a total of $21.60, and the order is confirmed with order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 2
+     },
+     "total": 21.6,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=11 and t=19, 2 Coffee Mugs ($12.00 each) were added to the cart and discount code SAVE10 was applied, correctly updating the total from $24.00 to $21.60. At t=22-23, the order was placed, confirmed on screen with order number TS-1007, and verified by a successful POST /api/order (status 201) in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "Two Coffee Mugs at $12.00 each were added to the cart by t=11 ($24.00), and applying code SAVE10 at t=19 accurately reduced the total by 10% to $21.60. Both the timeline at t=23 and the final screenshot confirm the order was placed and completed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 2 Coffee Mugs to the cart by 00:11, applied the discount code SAVE10 at 00:19 to bring the total to $21.60, and successfully placed the order, receiving confirmation with order number TS-1007 at 00:23.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__rounding_off_by_cent",
+   "task": "two_mugs_discount",
+   "bug": "rounding_off_by_cent",
+   "agentModel": "gemini-4-argon",
+   "seconds": 44,
+   "agent": {
+    "success": true,
+    "claim": "I bought 2 Coffee Mugs using the discount code SAVE10 for a total of $21.61, and the order was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 21.61 (expected 21.6)"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 2
+     },
+     "total": 21.61,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount should total $21.60, not $21.61. The cart incorrectly added an extra cent from the beginning ($12.01 at t=4, $24.01 at t=11, and $21.61 after the discount at t=21), so the order placed at t=27 charged the wrong amount.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount (SAVE10) should total $21.60, not $21.61. The timeline shows an erroneous extra $0.01 added to the cart total from the start ($12.01 at t=4, $24.01 at t=11, and $21.61 after applying the discount at t=21), yet the agent still placed the order at t=27 with the incorrect total.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "The agent added 2 Coffee Mugs to the cart by 00:11, applied the discount code SAVE10 at 00:21, and placed the order, receiving confirmation with order number TS-1007 at 00:28.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__total_ignores_qty",
+   "task": "two_mugs_discount",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 38,
+   "agent": {
+    "success": true,
+    "claim": "I bought 2 Coffee Mugs using the discount code SAVE10, and the order TS-1007 has been confirmed.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": false,
+    "reason": "wrong total 10.8 (expected 21.6)"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 2
+     },
+     "total": 10.8,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": false,
+      "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount (SAVE10) should total $21.60, not $10.80. When the '+' button was clicked at t=11, the total remained stuck at $12.00 (the price of 1 mug), resulting in an incorrect final order total of $10.80 after the discount was applied at t=20.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": false,
+      "evidence": "At $12.00 per Coffee Mug, 2 mugs with a 10% discount should total $21.60, not $10.80. When the quantity was increased to 2 at t=11, the subtotal remained stuck at $12.00, resulting in an incorrect final order total of $10.80 at t=20 and t=27.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": false,
+      "evidence": "When the agent increased the Coffee Mug quantity to 2 at 00:11, the cart total remained stuck at $12.00 instead of updating to $24.00. After applying SAVE10 at 00:20 and placing the order at 00:27, the final total charged was $10.80 (the discounted price for 1 mug rather than $21.60 for 2 mugs).",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  },
+  {
+   "id": "two_mugs_discount__wrong_item_added",
+   "task": "two_mugs_discount",
+   "bug": "wrong_item_added",
+   "agentModel": "gemini-4-argon",
+   "seconds": 47,
+   "agent": {
+    "success": true,
+    "claim": "I bought 2 Coffee Mugs using the discount code SAVE10 for a total of $21.60, and the order was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-mug",
+     "click inc-mug",
+     "fill discount-input \"SAVE10\"",
+     "click apply-discount",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "mug": 2
+     },
+     "total": 21.6,
+     "code": "SAVE10"
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {
+    "v1": {
+     "agentproof+network": {
+      "task_succeeded": true,
+      "evidence": "At t=8, 2 Coffee Mugs ($12.00 each) totaled $24.00, and applying SAVE10 at t=17 properly applied a 10% discount for a correct total of $21.60. The order was placed at t=22, confirmed at t=23 (TS-1007) as shown in the final screenshot, and verified by a 201 status on POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "agentproof": {
+      "task_succeeded": true,
+      "evidence": "Two Coffee Mugs at $12.00 each total $24.00 (t=8), and applying the SAVE10 10% discount correctly updated the total to $21.60 (t=17). At t=23 and in the final screenshot, the order for 2 Coffee Mugs at $21.60 is confirmed with order number TS-1007.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
+     "single": {
+      "task_succeeded": true,
+      "evidence": "At 00:08, the cart shows 2 Coffee Mugs, and at 00:17, the discount code SAVE10 is applied, updating the total to $21.60. At 00:23, the order is confirmed with order number TS-1007.",
+      "models": {
+       "baseline": "gemini-4-carbon"
+      }
+     },
+     "trust": {
+      "task_succeeded": true,
+      "evidence": "Took the agent's word for it.",
+      "models": {}
+     }
+    }
+   }
+  }
+ ]
+}

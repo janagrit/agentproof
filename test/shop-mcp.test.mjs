@@ -40,9 +40,9 @@ test("429 is retried", quiet(async () => {
 test("redact hides key-bearing links and cart tokens, keeps product links", () => {
   const r = redact({
     continue_url: "https://shop.example/cart/c/abc?key=1",
-    line_items: [{ id: "gid://shopify/CartLine/eefd?cart=hWNJPfq5xNhjQ", item: { id: "gid://shopify/ProductVariant/1" } }],
+    line_items: [{ id: "gid://shopify/CartLine/eefd?cart=FAKEcartTOKEN01", item: { id: "gid://shopify/ProductVariant/1" } }],
     variants: [{ url: "https://shop.example/products/sock?variant=1", checkout_url: "https://shop.example/cart/1:1" }],
-    text: "line gid://shopify/CartLine/eefd?cart=hWNJPfq5xNhjQ qty 1",
+    text: "line gid://shopify/CartLine/eefd?cart=FAKEcartTOKEN01 qty 1",
   });
   assert.equal(r.continue_url, "[REDACTED]");
   assert.equal(r.line_items[0].id, "gid://shopify/CartLine/eefd?cart=[REDACTED]");
@@ -51,11 +51,11 @@ test("redact hides key-bearing links and cart tokens, keeps product links", () =
   assert.equal(r.text, "line gid://shopify/CartLine/eefd?cart=[REDACTED] qty 1");
 });
 
-test("redact hides the key inside real cart ids (seen live)", () => {
-  const id = "gid://shopify/Cart/hWNJPjsXge3vjO8QH74shIf3?key=a20c3e3134c6a8e5b8b29a11a209be5d";
-  assert.equal(redact(id), "gid://shopify/Cart/hWNJPjsXge3vjO8QH74shIf3?key=[REDACTED]");
-  assert.equal(redact(`cart ${id} | USD total $22.00`), "cart gid://shopify/Cart/hWNJPjsXge3vjO8QH74shIf3?key=[REDACTED] | USD total $22.00");
-  assert.equal(redact({ args: { id } }).args.id, "gid://shopify/Cart/hWNJPjsXge3vjO8QH74shIf3?key=[REDACTED]");
+test("redact hides the key inside cart ids (same shape as live ids; fake values)", () => {
+  const id = "gid://shopify/Cart/FAKEcartID0000000000000a?key=0000000000000000fakefakefake0000";
+  assert.equal(redact(id), "gid://shopify/Cart/FAKEcartID0000000000000a?key=[REDACTED]");
+  assert.equal(redact(`cart ${id} | USD total $22.00`), "cart gid://shopify/Cart/FAKEcartID0000000000000a?key=[REDACTED] | USD total $22.00");
+  assert.equal(redact({ args: { id } }).args.id, "gid://shopify/Cart/FAKEcartID0000000000000a?key=[REDACTED]");
 });
 
 test("cartCreateArgs builds Shop's line_items and an idempotency key", () => {

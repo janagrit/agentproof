@@ -8,7 +8,7 @@
 import "dotenv/config";
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
-import { VERIFIERS, VERIFIER_MODELS, VERIFIERS_FOR, modelsFor } from "./verifiers.mjs";
+import { VERIFIERS, VERIFIER_MODELS, VERIFIERS_FOR, OPTIONAL_VERIFIERS_FOR, modelsFor } from "./verifiers.mjs";
 import { scoreRows } from "./metrics.mjs";
 import { parseCli, list } from "../src/cli.mjs";
 import { rootPath, userPath } from "../src/paths.mjs";
@@ -33,8 +33,9 @@ const names = list(args.verifiers) ?? VERIFIERS_FOR[kind];
 try {
   const unknown = names.filter(n => !VERIFIERS[n]);
   if (unknown.length) throw new Error(`Unknown verifier(s): ${unknown.join(", ")}. Known: ${Object.keys(VERIFIERS).join(", ")}`);
-  const wrongKind = names.filter(n => !VERIFIERS_FOR[kind].includes(n));
-  if (wrongKind.length) throw new Error(`Verifier(s) ${wrongKind.join(", ")} don't fit ${kind} runs. Use: ${VERIFIERS_FOR[kind].join(", ")}`);
+  const allowed = [...VERIFIERS_FOR[kind], ...OPTIONAL_VERIFIERS_FOR[kind]];
+  const wrongKind = names.filter(n => !allowed.includes(n));
+  if (wrongKind.length) throw new Error(`Verifier(s) ${wrongKind.join(", ")} don't fit ${kind} runs. Use: ${allowed.join(", ")}`);
   const needed = [...new Set(names.flatMap(n => VERIFIER_MODELS[n]))];
   if (needed.length) requireModels(...needed);
 } catch (e) {

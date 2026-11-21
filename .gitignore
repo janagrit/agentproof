@@ -11,3 +11,5 @@ runs_shop_mock
 runs_*/
 results
 out
+.env.*
+!.env.example

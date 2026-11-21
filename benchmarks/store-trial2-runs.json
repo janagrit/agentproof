@@ -1,0 +1,132 @@
+{
+ "source": "runs_trial2",
+ "count": 3,
+ "runs": [
+  {
+   "id": "one_tee__discount_not_applied",
+   "task": "one_tee",
+   "bug": "discount_not_applied",
+   "agentModel": "gemini-4-argon",
+   "seconds": 27,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which is confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {}
+  },
+  {
+   "id": "one_tee__none",
+   "task": "one_tee",
+   "bug": "none",
+   "agentModel": "gemini-4-argon",
+   "seconds": 22,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {}
+  },
+  {
+   "id": "one_tee__total_ignores_qty",
+   "task": "one_tee",
+   "bug": "total_ignores_qty",
+   "agentModel": "gemini-4-argon",
+   "seconds": 24,
+   "agent": {
+    "success": true,
+    "claim": "I added one T-Shirt to the cart and placed the order, which was confirmed with order number TS-1007.",
+    "steps": [
+     "click add-tee",
+     "click place-order",
+     "waited"
+    ]
+   },
+   "truth": {
+    "success": true,
+    "reason": "order matches task"
+   },
+   "orders": [
+    {
+     "items": {
+      "tee": 1
+     },
+     "total": 20,
+     "code": ""
+    }
+   ],
+   "network": [
+    {
+     "method": "GET",
+     "url": "/",
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "url": "/api/order",
+     "status": 201
+    }
+   ],
+   "verdicts": {}
+  }
+ ]
+}
