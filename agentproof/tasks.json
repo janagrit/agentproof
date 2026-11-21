@@ -1,0 +1,38 @@
+[
+  {
+    "id": "one_tee",
+    "instruction": "Buy one T-Shirt.",
+    "expected": { "items": { "tee": 1 }, "total": 20.00 },
+    "mock_plan": [["click", "add-tee"], ["click", "place-order"]]
+  },
+  {
+    "id": "two_mugs_discount",
+    "instruction": "Buy 2 Coffee Mugs using discount code SAVE10.",
+    "expected": { "items": { "mug": 2 }, "total": 21.60 },
+    "mock_plan": [["click", "add-mug"], ["click", "inc-mug"], ["fill", "discount-input", "SAVE10"], ["click", "apply-discount"], ["click", "place-order"]]
+  },
+  {
+    "id": "cap_and_tee",
+    "instruction": "Buy a Cap and a T-Shirt.",
+    "expected": { "items": { "cap": 1, "tee": 1 }, "total": 35.00 },
+    "mock_plan": [["click", "add-cap"], ["click", "add-tee"], ["click", "place-order"]]
+  },
+  {
+    "id": "remove_then_buy",
+    "instruction": "Add a Coffee Mug and a Cap to the cart, then remove the Cap, and buy what is left.",
+    "expected": { "items": { "mug": 1 }, "total": 12.00 },
+    "mock_plan": [["click", "add-mug"], ["click", "add-cap"], ["click", "remove-cap"], ["click", "place-order"]]
+  },
+  {
+    "id": "three_tees_discount",
+    "instruction": "Buy 3 T-Shirts with discount code SAVE10.",
+    "expected": { "items": { "tee": 3 }, "total": 54.00 },
+    "mock_plan": [["click", "add-tee"], ["click", "inc-tee"], ["click", "inc-tee"], ["fill", "discount-input", "SAVE10"], ["click", "apply-discount"], ["click", "place-order"]]
+  },
+  {
+    "id": "fallback_code",
+    "instruction": "Try discount code WELCOME. If it does not work, use SAVE10 instead. Then buy one Coffee Mug.",
+    "expected": { "items": { "mug": 1 }, "total": 10.80 },
+    "mock_plan": [["click", "add-mug"], ["fill", "discount-input", "WELCOME"], ["click", "apply-discount"], ["fill", "discount-input", "SAVE10"], ["click", "apply-discount"], ["click", "place-order"]]
+  }
+]

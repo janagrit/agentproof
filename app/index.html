@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tiny Shop</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+  .item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+  button { padding: 6px 12px; cursor: pointer; }
+  #cart li { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  #total { font-size: 20px; font-weight: bold; }
+  #spinner { display: none; }
+  .error { color: #b00; }
+  .hidden { display: none; }
+</style>
+<!--MUTANT-->
+</head>
+<body>
+<h1>Tiny Shop</h1>
+
+<section id="catalog">
+  <div class="item" data-sku="mug"><span>Coffee Mug</span><span>$12.00</span><button data-testid="add-mug">Add to cart</button></div>
+  <div class="item" data-sku="tee"><span>T-Shirt</span><span>$20.00</span><button data-testid="add-tee">Add to cart</button></div>
+  <div class="item" data-sku="cap"><span>Cap</span><span>$15.00</span><button data-testid="add-cap">Add to cart</button></div>
+</section>
+
+<h2>Cart</h2>
+<ul id="cart" data-testid="cart"></ul>
+<p id="empty" data-testid="empty-cart">Your cart is empty.</p>
+
+<label>Discount code <input id="code" data-testid="discount-input" placeholder="e.g. SAVE10"></label>
+<button id="apply" data-testid="apply-discount">Apply</button>
+<p id="code-msg" data-testid="discount-message"></p>
+
+<p>Total: <span id="total" data-testid="total">$0.00</span></p>
+
+<button id="checkout" data-testid="place-order" disabled>Place order</button>
+<span id="spinner" data-testid="spinner">Processing...</span>
+
+<div id="confirm" class="hidden" data-testid="confirmation">
+  <h2>Thank you! Your order is confirmed.</h2>
+  <p>Order number: <span id="order-no" data-testid="order-number"></span></p>
+</div>
+
+<script>
+const M = window.__MUTANT__ || "";
+const PRICES = { mug: 12, tee: 20, cap: 15 };
+const NAMES = { mug: "Coffee Mug", tee: "T-Shirt", cap: "Cap" };
+const cart = {};
+let discount = 0;
+
+function subtotal() {
+  let s = 0;
+  for (const [sku, qty] of Object.entries(cart)) {
+    s += PRICES[sku] * (M === "total_ignores_qty" ? 1 : qty);
+  }
+  return s;
+}
+
+function currentTotal() {
+  let total = subtotal() * (1 - (M === "discount_not_applied" ? 0 : discount));
+  if (M === "rounding_off_by_cent" && total > 0) total += 0.01;
+  return total;
+}
+
+function render() {
+  const ul = document.getElementById("cart");
+  ul.innerHTML = "";
+  const skus = Object.keys(cart);
+  for (const sku of skus) {
+    const li = document.createElement("li");
+    li.dataset.testid = "cart-item-" + sku;
+    li.innerHTML = `<span>${NAMES[sku]}</span>
+      <button data-testid="dec-${sku}">-</button>
+      <span data-testid="qty-${sku}">${cart[sku]}</span>
+      <button data-testid="inc-${sku}">+</button>
+      <button data-testid="remove-${sku}">Remove</button>`;
+    ul.appendChild(li);
+    li.querySelector(`[data-testid=inc-${sku}]`).onclick = () => {
+      if (M === "qty_capped_at_1" && cart[sku] >= 1) return;
+      cart[sku]++; render();
+    };
+    li.querySelector(`[data-testid=dec-${sku}]`).onclick = () => {
+      cart[sku]--; if (cart[sku] <= 0) delete cart[sku]; render();
+    };
+    li.querySelector(`[data-testid=remove-${sku}]`).onclick = () => {
+      if (M === "remove_broken") return;
+      delete cart[sku]; render();
+    };
+  }
+  document.getElementById("empty").style.display = skus.length ? "none" : "block";
+  document.getElementById("total").textContent = "$" + currentTotal().toFixed(2);
+  document.getElementById("checkout").disabled = M === "checkout_always_disabled" ? true : skus.length === 0;
+}
+
+document.querySelectorAll("#catalog button").forEach(b => {
+  b.onclick = () => {
+    const sku = b.closest(".item").dataset.sku;
+    if (M === "wrong_item_added" && sku === "tee") { cart.cap = (cart.cap || 0) + 1; render(); return; }
+    cart[sku] = (cart[sku] || 0) + 1; render();
+  };
+});
+
+document.getElementById("apply").onclick = () => {
+  const code = document.getElementById("code").value.trim().toUpperCase();
+  const msg = document.getElementById("code-msg");
+  if (code === "SAVE10" || (M === "any_code_accepted" && code)) {
+    discount = 0.10; msg.textContent = "10% discount applied"; msg.className = "";
+  } else {
+    discount = 0; msg.textContent = "Invalid code"; msg.className = "error";
+  }
+  render();
+};
+
+document.getElementById("checkout").onclick = () => {
+  document.getElementById("spinner").style.display = "inline";
+  document.getElementById("checkout").disabled = true;
+  const order = { items: { ...cart }, total: Number(currentTotal().toFixed(2)), code: discount ? "SAVE10" : "" };
+  setTimeout(async () => {
+    document.getElementById("spinner").style.display = "none";
+    if (M === "no_confirmation") return;
+    // order_silently_fails: UI says success, but the order never reaches the server.
+    if (M !== "order_silently_fails") {
+      await fetch("/api/order", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(order) });
+    }
+    document.getElementById("order-no").textContent = M === "empty_order_number" ? "" : "TS-" + (1000 + Object.keys(cart).length * 7);
+    document.getElementById("confirm").classList.remove("hidden");
+  }, 1200);
+};
+
+render();
+</script>
+</body>
+</html>

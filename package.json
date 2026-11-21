@@ -1,0 +1,20 @@
+{
+  "name": "agentproof",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "app": "node app/server.mjs",
+    "collect": "node agentproof/collect.mjs",
+    "collect:mock": "node agentproof/collect.mjs --mock",
+    "eval": "node agentproof/eval.mjs",
+    "sanity": "node src/sanity.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}
