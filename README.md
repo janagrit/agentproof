@@ -37,13 +37,33 @@ agent's runs are not scripted by us.
 Metrics: accuracy, **agent lies caught** (agent said success, server says no),
 **false alarms** (real success flagged as failure).
 
+## Setup
+
+Needs Node 20+, [ffmpeg](https://ffmpeg.org) on your PATH (`brew install ffmpeg`)
+and Playwright's Chromium.
+
+```bash
+npm ci
+npx playwright install chromium
+cp .env.example .env               # key + model IDs (only for real runs)
+npm run doctor                     # checks all of the above, says what's missing
+```
+
+## Check the plumbing (no API key)
+
+```bash
+npm test          # unit tests: ground truth, scoring, server, JSON parsing, retries
+npm run smoke     # mock agent on a clean + buggy store, end to end, asserts 1 lie found
+npm run check     # both
+```
+
+Run `npm run check` before trusting any new numbers. Scripts work from any
+directory; outputs always go under the repo root unless you pass `--out` /
+`--runs` / `--results`.
+
 ## Run
 
 ```bash
-npm install
-npx playwright install chromium
-cp .env.example .env               # key + model IDs
-
 # Plumbing test, no API key needed:
 node agentproof/collect.mjs --mock
 node agentproof/eval.mjs --runs runs_mock --verifiers trust --tag mock
@@ -60,6 +80,12 @@ Start small: `--tasks one_tee,two_mugs_discount --mutants none,discount_not_appl
 Results: `results/<tag>.md`, with a table plus every run a verifier got wrong.
 Each run folder in `runs/` has `video.mp4`, `final.png`, `run.json` (claim,
 truth, network log) and the verdicts.
+
+Verdicts are cached per run as `verdict.<verifier>.<tag>.json`, together with
+the model IDs that produced them. Changing a `MODEL_*` recomputes automatically,
+and errored verdicts (rate limit, bad JSON) are retried on the next eval. After
+editing a **prompt**, pass `--redo` or use a new `--tag`. Gemini calls retry
+with backoff on 429/5xx, so "Errors" in the table means a call failed 4 times.
 
 ## Expected story (to confirm with real runs)
 
@@ -81,17 +107,33 @@ the Gemini agent, whose behavior we don't script.
 app/                 demo store, 11 injectable bugs, order log (ground truth)
 agentproof/
   tasks.json         6 shopping tasks + expected orders
+  tasks.mjs          loads tasks / mutants, rejects unknown names
+  truth.mjs          ground truth: does the logged order match the task?
   agent.mjs          the agent being checked (Gemini browser loop) + mock
   collect.mjs        runs agent x bugs, records video + network + truth
   verifiers.mjs      trust / single / agentproof / agentproof+network
+  metrics.mjs        accuracy, lies caught, false alarms
   eval.mjs           scores verifiers against truth
-src/gemini.mjs       Gemini SDK wrapper, model IDs from .env
+  managed.mjs        same as collect, with a Gemini Managed Agent
+src/                 shared code
+  gemini.mjs         Gemini SDK wrapper: retries, JSON parsing, model IDs from .env
+  paths.mjs          repo-root paths (scripts work from any directory)
+  cli.mjs            strict argument parsing (typos are errors)
+  media.mjs          ffmpeg helpers
+test/                unit tests (node --test, no API key, no browser)
+scripts/
+  smoke.mjs          end-to-end mock run
+  doctor.mjs         setup check
+rec2test/            the earlier fallback idea (see below)
 ```
 
 ## Fallback: rec2test
 
 Same repo also holds the earlier idea (recording -> Playwright test, scored by
-mutation testing): `src/systems.mjs`, `src/eval.mjs`, `npm run sanity`.
+mutation testing), all under `rec2test/`. Put recordings in
+`rec2test/recordings/*.mp4`, then `npm run rec2test`; results go to
+`rec2test/out/<tag>/`. `npm run sanity` (no API key) checks the mutation
+harness: the strong reference test kills 10/11 mutants, the weak one 0/11.
 
 ## Gemini Managed Agent (Best Managed Agents award)
 
