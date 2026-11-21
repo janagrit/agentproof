@@ -70,7 +70,6 @@ if (mixedAgents) console.warn("WARNING: these runs come from more than one agent
 console.log("");
 const summary = [];
 const failures = [];
-let legacyCacheWarned = false;
 
 for (const name of names) {
   const rows = [];
@@ -84,11 +83,8 @@ for (const name of names) {
       const cached = JSON.parse(readFileSync(cache, "utf8"));
       if (cached.task_succeeded === null) {
         v = null; // errored last time (e.g. rate limit): try again
-      } else if (!cached.meta) {
-        if (!legacyCacheWarned) { console.warn("Note: reusing verdicts cached before model tracking; pass --redo to recompute."); legacyCacheWarned = true; }
-        v = cached;
-      } else if (!sameModels(cached.meta.models, models)) {
-        console.warn(`\n  ${id}: cached ${name} verdict used ${JSON.stringify(cached.meta.models)}, now ${JSON.stringify(models)}. Recomputing.`);
+      } else if (!sameModels(cached.meta?.models, models)) {
+        console.warn(`\n  ${id}: cached ${name} verdict used ${JSON.stringify(cached.meta?.models ?? "unknown models")}, now ${JSON.stringify(models)}. Recomputing.`);
       } else {
         v = cached;
       }

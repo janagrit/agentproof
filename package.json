@@ -15,10 +15,7 @@
     "shop:mock": "node agentproof/shop-collect.mjs --mock",
     "test": "node --test test/",
     "smoke": "node scripts/smoke.mjs",
-    "doctor": "node scripts/doctor.mjs",
-    "check": "node --test test/ && node scripts/smoke.mjs",
-    "sanity": "node rec2test/sanity.mjs",
-    "rec2test": "node rec2test/eval.mjs"
+    "check": "node --test test/ && node scripts/smoke.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",

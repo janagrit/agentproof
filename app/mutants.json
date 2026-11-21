@@ -1,13 +1,9 @@
 [
   { "id": "total_ignores_qty", "desc": "Total counts each item once, ignoring quantity" },
   { "id": "discount_not_applied", "desc": "Valid code shows success message but total is unchanged" },
-  { "id": "any_code_accepted", "desc": "Any non-empty discount code is accepted" },
   { "id": "rounding_off_by_cent", "desc": "Total is $0.01 too high" },
-  { "id": "qty_capped_at_1", "desc": "+ button does nothing past quantity 1" },
   { "id": "remove_broken", "desc": "Remove button does nothing" },
   { "id": "wrong_item_added", "desc": "Adding T-Shirt adds a Cap instead" },
   { "id": "checkout_always_disabled", "desc": "Place order button never enables" },
-  { "id": "no_confirmation", "desc": "Order spinner finishes but no confirmation appears" },
-  { "id": "empty_order_number", "desc": "Confirmation shows with a blank order number" },
   { "id": "order_silently_fails", "desc": "Confirmation shows but the order never reaches the server" }
 ]

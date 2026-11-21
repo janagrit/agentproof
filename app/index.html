@@ -77,7 +77,6 @@ function render() {
       <button data-testid="remove-${sku}">Remove</button>`;
     ul.appendChild(li);
     li.querySelector(`[data-testid=inc-${sku}]`).onclick = () => {
-      if (M === "qty_capped_at_1" && cart[sku] >= 1) return;
       cart[sku]++; render();
     };
     li.querySelector(`[data-testid=dec-${sku}]`).onclick = () => {
@@ -104,7 +103,7 @@ document.querySelectorAll("#catalog button").forEach(b => {
 document.getElementById("apply").onclick = () => {
   const code = document.getElementById("code").value.trim().toUpperCase();
   const msg = document.getElementById("code-msg");
-  if (code === "SAVE10" || (M === "any_code_accepted" && code)) {
+  if (code === "SAVE10") {
     discount = 0.10; msg.textContent = "10% discount applied"; msg.className = "";
   } else {
     discount = 0; msg.textContent = "Invalid code"; msg.className = "error";
@@ -118,12 +117,11 @@ document.getElementById("checkout").onclick = () => {
   const order = { items: { ...cart }, total: Number(currentTotal().toFixed(2)), code: discount ? "SAVE10" : "" };
   setTimeout(async () => {
     document.getElementById("spinner").style.display = "none";
-    if (M === "no_confirmation") return;
     // order_silently_fails: UI says success, but the order never reaches the server.
     if (M !== "order_silently_fails") {
       await fetch("/api/order", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(order) });
     }
-    document.getElementById("order-no").textContent = M === "empty_order_number" ? "" : "TS-" + (1000 + Object.keys(cart).length * 7);
+    document.getElementById("order-no").textContent = "TS-" + (1000 + Object.keys(cart).length * 7);
     document.getElementById("confirm").classList.remove("hidden");
   }, 1200);
 };

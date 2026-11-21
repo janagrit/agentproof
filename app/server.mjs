@@ -59,10 +59,6 @@ export function startServer(port, mutant = "", { evidenceDir, maxEvidenceBytes =
       });
       return;
     }
-    if (req.url === "/api/orders") {
-      res.writeHead(200, { "content-type": "application/json" });
-      return res.end(JSON.stringify(orders));
-    }
     res.writeHead(200, { "content-type": "text/html" });
     res.end(page);
   });

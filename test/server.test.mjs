@@ -28,8 +28,6 @@ test("port 0 picks a free port and orders are recorded", async () => {
     assert.equal(r.status, 201);
     await request(server.port, "POST", "/api/order", "{not json");
     assert.deepEqual(server.orders, [{ items: { tee: 1 }, total: 20 }, { malformed: "{not json" }]);
-    const list = await request(server.port, "GET", "/api/orders");
-    assert.equal(JSON.parse(list.body).length, 2);
   } finally { server.close(); }
 });
 

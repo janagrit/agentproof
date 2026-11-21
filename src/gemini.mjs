@@ -17,7 +17,7 @@ export function getAI() {
 export const MODELS = {
   // Fast model: watches the video, finds actions and timestamps.
   perceive: process.env.MODEL_PERCEIVE,
-  // Strongest reasoner: the judge (and rec2test's test author).
+  // Strongest reasoner: the judge.
   author: process.env.MODEL_AUTHOR,
   // The agent being checked (any model; it does not need to be good).
   agent: process.env.MODEL_AGENT || process.env.MODEL_PERCEIVE,
@@ -34,7 +34,7 @@ export function requireModels(...keys) {
   const needKey = !process.env.GEMINI_API_KEY;
   if (missing.length || needKey) {
     const what = [...(needKey ? ["GEMINI_API_KEY"] : []), ...missing.map(k => ENV_FOR[k] || k)];
-    throw new Error(`Missing in .env: ${what.join(", ")}. Run \`npm run doctor\` to check your setup.`);
+    throw new Error(`Missing in .env: ${what.join(", ")}. See .env.example.`);
   }
 }
 
@@ -123,10 +123,4 @@ export async function generateJSON(model, parts) {
     const again = await generate(model, [...parts, "Your previous reply was not valid JSON. Reply with ONLY the JSON object."], { json: true });
     return parseModelJSON(again);
   }
-}
-
-// Pull a code block out of a model reply, or return the reply as is.
-export function extractCode(text) {
-  const m = text.match(/```(?:ts|typescript|js|javascript)?\s*\n([\s\S]*?)```/);
-  return (m ? m[1] : text).trim() + "\n";
 }

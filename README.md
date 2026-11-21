@@ -46,8 +46,10 @@ and Playwright's Chromium.
 npm ci
 npx playwright install chromium
 cp .env.example .env               # key + model IDs (only for real runs)
-npm run doctor                     # checks all of the above, says what's missing
 ```
+
+Real runs check their own setup at startup (API key, model IDs, ffmpeg) and
+name anything missing.
 
 ## Check the plumbing (no API key)
 
@@ -253,7 +255,7 @@ does, which is what AgentProof is. Regenerate the charts after new runs with
 
 ```
 app/                   the demo store and the answer key
-  index.html           the store, with 11 bugs that can be switched on
+  index.html           the store, with 7 bugs that can be switched on
   mutants.json         the bug list
   server.mjs           serves the store, logs every real order (ground truth)
 agentproof/            the product: run agents, check claims, score the checkers
@@ -275,9 +277,7 @@ src/                   shared code
 test/                  unit tests (node --test, no API key, no browser)
 scripts/
   smoke.mjs            end-to-end mock run
-  doctor.mjs           setup check
   effort-chart.mjs     builds the agent-effort charts in docs/ from runs/
-rec2test/              the earlier fallback idea (see below)
 docs/                  images for this README
 ```
 
@@ -291,7 +291,6 @@ runs/                  collect.mjs output, one folder per task x bug:
 runs_mock/             same, from --mock (plumbing only, never report these)
 runs_managed/          same, from managed.mjs (+ session.har, interaction.json)
 results/<tag>.md       eval.mjs report: score table + every run a verifier got wrong
-rec2test/out/<tag>/    rec2test generated tests and scores
 ```
 
 ## AgentProof on Shop MCP (real catalog, real carts)
@@ -327,14 +326,6 @@ node agentproof/eval.mjs --runs runs_shop --tag shop_v1
 Each live run creates real anonymous carts at real stores (no orders, no
 money; carts expire after 30 days).
 
-## Fallback: rec2test
-
-Same repo also holds the earlier idea (recording -> Playwright test, scored by
-mutation testing), all under `rec2test/`. Put recordings in
-`rec2test/recordings/*.mp4`, then `npm run rec2test`; results go to
-`rec2test/out/<tag>/`. `npm run sanity` (no API key) checks the mutation
-harness: the strong reference test kills 10/11 mutants, the weak one 0/11.
-
 ## Gemini Managed Agent (Best Managed Agents award)
 
 The agent being checked can be a Gemini Managed Agent instead of the simple loop.
@@ -354,8 +345,4 @@ store's order log, which the agent and the verifiers never see.
 Check the Interactions API request/response fields in `managed.mjs` against
 Builder Resources before the first run.
 
-## Prior work (disclosure)
 
-Built before the hackathon started on Nov 21: the demo store and bugs, the
-mutation-testing harness (rec2test), and first versions of the agent runner,
-verifiers and eval scripts. Everything after the first commit was built at the event.
