@@ -2,8 +2,7 @@
 
 AI agents say **"Done!"** when they aren't. AgentProof watches what the agent actually did, checks the server traffic, and audits the claim.
 
-Gemini 4 NYC Hackathon · Problem Statement One (5 Sigma)  
-**[Open Live Browser Viewer](https://janagrit.github.io/agentproof/)** · **[Watch the 59s Demo Video](docs/proof.mp4)**
+Gemini 4 NYC Hackathon · Problem Statement One (5 Sigma) · **[Open Live Browser Viewer](https://janagrit.github.io/agentproof/)**
 
 ![The lie](docs/the-lie.png)
 

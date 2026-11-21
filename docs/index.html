@@ -15,21 +15,12 @@
   header { padding: 22px 0 18px; border-bottom: 1px solid var(--border); background: #0e131c; }
   .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
   .hero-title h1 { margin: 0; font-size: 26px; letter-spacing: -0.4px; display: flex; align-items: center; gap: 10px; }
-  .hero-title p { margin: 6px 0 0; color: var(--muted); font-size: 15px; max-width: 720px; }
+  .hero-title p { margin: 6px 0 0; color: var(--muted); font-size: 15px; max-width: 780px; }
   .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .btn { color: var(--ink); text-decoration: none; font-size: 13.5px; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel2); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-  .btn.primary { border-color: rgba(88,166,255,.5); background: rgba(88,166,255,.16); color: #8cc4ff; }
   .btn:hover { border-color: var(--accent); }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
-  @media (max-width: 820px) { .stats { grid-template-columns: 1fr; } }
-  .stat { padding: 12px 16px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .stat.highlight { border-color: rgba(46,204,113,.45); background: rgba(46,204,113,.08); }
-  .stat .label { font-size: 13px; color: var(--muted); }
-  .stat .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
-  .stat .num { font-size: 20px; font-weight: 700; white-space: nowrap; }
-  .stat.highlight .num { color: var(--ok); }
 
-  .pipeline { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; margin-top: 14px; }
+  .pipeline { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; margin-top: 16px; }
   @media (max-width: 900px) { .pipeline { grid-template-columns: 1fr; } .pipe-arrow { display: none; } }
   .pipe-box { padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); }
   .pipe-box .pstep { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
@@ -37,19 +28,37 @@
   .pipe-box .pdesc { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
   .pipe-arrow { display: flex; align-items: center; color: var(--muted); font-size: 18px; font-weight: 700; padding: 0 2px; }
 
-  .picker-bar { padding: 12px 0; border-bottom: 1px solid var(--border); background: var(--panel); position: sticky; top: 0; z-index: 20; }
-  .picker-inner { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  @media (max-width: 820px) { .stats { grid-template-columns: 1fr; } }
+  .stat { padding: 12px 16px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .stat.highlight { border-color: rgba(46,204,113,.45); background: rgba(46,204,113,.08); }
+  .stat .label { font-size: 13px; color: var(--ink); font-weight: 600; }
+  .stat .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .stat .num { font-size: 19px; font-weight: 700; white-space: nowrap; }
+  .stat.highlight .num { color: var(--ok); }
+
+  .tabs-bar { background: #101520; border-bottom: 1px solid var(--border); padding-top: 12px; position: sticky; top: 0; z-index: 20; }
+  .tabs-row { display: flex; gap: 10px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--border); align-items: center; }
+  .tab-btn { background: var(--panel); color: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 650; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: .15s; }
+  .tab-btn:hover { color: var(--ink); border-color: var(--accent); }
+  .tab-btn.active { background: rgba(88,166,255,.16); color: #fff; border-color: var(--accent); box-shadow: 0 0 0 1px rgba(88,166,255,.25); }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block; box-shadow: 0 0 8px var(--ok); }
+  .tab-note { font-size: 12.5px; color: var(--muted); margin-left: auto; }
+  @media (max-width: 900px) { .tab-note { display: none; } }
+
+  .picker-inner { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 0; }
   .picker-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 4px; }
   button.chip { background: var(--panel2); color: var(--ink); border: 1px solid var(--border); border-radius: 999px; padding: 6px 13px; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: .15s; }
   button.chip:hover { border-color: var(--accent); }
-  button.chip.active { border-color: var(--accent); background: rgba(88,166,255,.2); color: #fff; font-weight: 600; }
-  select { background: var(--panel2); color: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; margin-left: auto; max-width: 320px; }
+  button.chip.active { border-color: var(--accent); background: rgba(88,166,255,.22); color: #fff; font-weight: 600; }
+  select { background: var(--panel2); color: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; margin-left: auto; max-width: 340px; }
 
   main { display: grid; grid-template-columns: 1.08fr 1fr; gap: 22px; padding: 22px 0 48px; align-items: start; }
   @media (max-width: 1024px) { main { grid-template-columns: 1fr; } }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
-  .section-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; align-items: center; }
+  .section-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
   .task-prompt { font-size: 18px; font-weight: 650; margin: 0 0 14px; letter-spacing: -0.2px; }
+  .shop-banner { padding: 10px 13px; border-radius: 8px; background: rgba(46,204,113,.09); border: 1px solid rgba(46,204,113,.35); font-size: 12.5px; color: #c8f7dc; margin-bottom: 14px; }
   .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
   .cbox { padding: 14px 16px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--border); }
@@ -64,7 +73,7 @@
   .badge.subtle { background: var(--bg); color: var(--muted); border: 1px solid var(--border); font-weight: 600; text-transform: none; }
 
   video { width: 100%; border-radius: 10px; background: #000; border: 1px solid var(--border); display: block; }
-  .shop-steps { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+  .shop-steps { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
   .shop-step { padding: 10px 12px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--border); font-size: 12.5px; }
   .shop-step strong { color: #8cc4ff; font-family: ui-monospace, monospace; }
 
@@ -100,9 +109,6 @@
   .meta-foot { color: var(--muted); font-size: 11.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
 
   pre { margin: 0; font-size: 12px; line-height: 1.45; color: #cfd6e4; white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto; background: var(--panel2); padding: 12px; border-radius: 8px; }
-  #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 9999; align-items: center; justify-content: center; padding: 24px; }
-  #modal.open { display: flex; }
-  .modal-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; max-width: 1040px; width: 100%; }
 </style>
 </head>
 <body>
@@ -111,36 +117,13 @@
     <div class="hero-top">
       <div class="hero-title">
         <h1>AgentProof</h1>
-        <p>AI agents say <strong>"Done!"</strong> when they aren't. Tested across <strong>24 live Shopify merchant runs</strong> (Shop MCP carts) and <strong>48 full-checkout video runs</strong> (controlled lab for $0.01 &amp; silent-drop checkout bugs you can't inject on live stores).</p>
+        <p>AI agents say <strong>"Done!"</strong> when they aren't. Switch between our <strong>24 live Shopify merchant runs</strong> (real Shop MCP carts) and <strong>48 full-checkout video runs</strong> below to see how multi-model verification catches every lie.</p>
       </div>
       <div class="actions">
-        <button class="btn primary" onclick="openOverview()">&#9654; Watch 59s Overview</button>
         <a class="btn" href="https://github.com/janagrit/agentproof" target="_blank" rel="noopener">GitHub Repo &rarr;</a>
       </div>
     </div>
-    <div class="stats">
-      <div class="stat">
-        <div>
-          <div class="label">Trusting the Agent (Status Quo)</div>
-          <div class="sub">Believes the agent's self-report</div>
-        </div>
-        <div class="num" style="color:var(--lie)">0 / 17 lies caught</div>
-      </div>
-      <div class="stat">
-        <div>
-          <div class="label">Single Gemini Video Call</div>
-          <div class="sub">Misses $0.01 errors &amp; silent drops</div>
-        </div>
-        <div class="num" style="color:var(--warn)">4 / 17 lies caught</div>
-      </div>
-      <div class="stat highlight">
-        <div>
-          <div class="label">AgentProof + Decisions API</div>
-          <div class="sub">Store (17/17) + Live Shopify (8/8)</div>
-        </div>
-        <div class="num">25 / 25 lies · 100%</div>
-      </div>
-    </div>
+
     <div class="pipeline" aria-label="How the 3-model verification pipeline works">
       <div class="pipe-box">
         <div class="pstep">Step 1 · Video Perception</div>
@@ -160,53 +143,57 @@
         <div class="pdesc">Single forward pass (<code>POST /v1beta/decisions</code>, <strong>0 output tokens</strong>) &rarr; calibrated <code>P(succeeded)</code>, failure route &amp; severity.</div>
       </div>
     </div>
+
+    <div class="stats" id="stats-bar"></div>
   </div>
 </header>
 
-<div class="picker-bar">
-  <div class="wrap picker-inner">
-    <span class="picker-label">Examples:</span>
-    <div id="chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-    <select id="picker" aria-label="Choose any of the 72 runs"></select>
+<div class="tabs-bar">
+  <div class="wrap">
+    <div class="tabs-row">
+      <button class="tab-btn active" id="tab-shop" onclick="switchTab('shop')">
+        <span class="live-dot"></span>
+        Live Shopify (Shop MCP · 24 Real Merchant Runs)
+      </button>
+      <button class="tab-btn" id="tab-store" onclick="switchTab('store')">
+        Browser Checkout Video Lab (48 Video Runs)
+      </button>
+      <span class="tab-note" id="tab-note"></span>
+    </div>
+    <div class="picker-inner">
+      <span class="picker-label">Examples:</span>
+      <div id="chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <select id="picker" aria-label="Choose run"></select>
+    </div>
   </div>
 </div>
 
 <div class="wrap">
   <main>
-    <section id="left"><div class="card">Loading 72 real Store + Shopify runs...</div></section>
+    <section id="left"><div class="card">Loading 72 real Shopify + Checkout Video runs...</div></section>
     <section id="right"></section>
   </main>
 </div>
 
-<div id="modal" onclick="if(event.target.id==='modal')closeOverview()">
-  <div class="modal-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <strong>AgentProof — 59s Overview</strong>
-      <button class="chip" onclick="closeOverview()">Close &times;</button>
-    </div>
-    <video id="overview-vid" controls playsinline preload="metadata" src="./proof.mp4"></video>
-  </div>
-</div>
-
 <script>
-const FEATURED = [
-  "two_mugs_discount__discount_not_applied",
-  "two_mugs_discount__rounding_off_by_cent",
-  "one_tee__order_silently_fails",
-  "three_tees_discount__total_ignores_qty",
-  "hoodie_m_to_l__update_silently_dropped",
-  "beanie__price_display_lowered",
-  "remove_then_buy__remove_broken",
-];
-const LABELS = {
-  "two_mugs_discount__discount_not_applied": "Discount Trap ($24 vs $21.60)",
-  "two_mugs_discount__rounding_off_by_cent": "Off by 1 Cent ($21.61)",
-  "one_tee__order_silently_fails": "Silent Drop (No Order Saved)",
-  "three_tees_discount__total_ignores_qty": "Quantity Bug ($18 vs $54)",
-  "hoodie_m_to_l__update_silently_dropped": "Shopify: Dropped Size M→L",
-  "beanie__price_display_lowered": "Shopify: Hidden Over-Budget",
-  "remove_then_buy__remove_broken": "Honest Workaround",
+const FEATURED_BY_KIND = {
+  shop: [
+    ["hoodie_m_to_l__update_silently_dropped", "Dropped Size Change (M → L)"],
+    ["beanie__price_display_lowered", "Hidden Over-Budget ($27.99 vs $25)"],
+    ["rain_jacket_m__create_silently_dropped", "Dropped Cart: Rains Jacket"],
+    ["running_shoes__create_silently_dropped", "Dropped Cart: Adidas Shoes"],
+    ["beanie__none", "Honest: Carhartt Beanie ($19.98)"],
+    ["rain_jacket_m__none", "Honest: Rains Jacket ($109.57)"],
+  ],
+  store: [
+    ["two_mugs_discount__discount_not_applied", "Discount Trap ($24 vs $21.60)"],
+    ["two_mugs_discount__rounding_off_by_cent", "Off by 1 Cent ($21.61)"],
+    ["one_tee__order_silently_fails", "Silent Drop (No Order Saved)"],
+    ["three_tees_discount__total_ignores_qty", "Quantity Bug ($18 vs $54)"],
+    ["remove_then_buy__remove_broken", "Honest Workaround (Used '−')"],
+  ],
 };
+
 const VERIFIER_META = {
   trust: { title: "1. Trust the Agent", sub: "No verification — believes the agent's claim", primary: true },
   single: { title: "2. Single-Model Video Check", sub: "Gemini 4 Carbon · 1 call on video + claim", primary: true },
@@ -216,24 +203,49 @@ const VERIFIER_META = {
   decision: { title: "Decisions API Alone (0 Output Tokens)", sub: "gemini-decision-1 single forward pass (no scratchpad)", primary: false },
   "agentproof+network-blind": { title: "Blind Network Check (No Failure Hint)", sub: "Hydrogen + Carbon + Network without rule hint", primary: false },
   "agentproof+tools": { title: "2. Tool-View Check (What Agent Saw)", sub: "Gemini 4 Carbon reading the proxy tool replies", primary: true },
-  "agentproof+wire": { title: "3. Real Server Wire Check", sub: "Gemini 4 Carbon reading real Shopify MCP traffic", primary: true },
+  "agentproof+wire": { title: "3. Real Shopify Wire Check", sub: "Gemini 4 Carbon reading real Shopify MCP traffic", primary: true },
   "agentproof+wire-decision": { title: "4. AgentProof + Decisions API", sub: "Carbon wire audit → gemini-decision-1 calibrated gate", primary: true },
   "agentproof+wire-blind": { title: "Blind Server Wire Check (No Hint)", sub: "Gemini 4 Carbon on server log without rule hint", primary: false },
 };
 
 let RUNS = [];
+let CURRENT_TAB = "shop";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const cleanEvidence = s => String(s ?? "").replace(/^\[P\(succeeded\)=[^\]]+\]\s*/, "");
 
-function openOverview() {
-  document.getElementById("modal").classList.add("open");
-  const v = document.getElementById("overview-vid");
-  if (v) v.play().catch(() => {});
-}
-function closeOverview() {
-  const v = document.getElementById("overview-vid");
-  if (v) v.pause();
-  document.getElementById("modal").classList.remove("open");
+function renderStats(kind) {
+  const bar = document.getElementById("stats-bar");
+  if (kind === "shop") {
+    bar.innerHTML = `
+      <div class="stat">
+        <div><div class="label">Trusting the Agent</div><div class="sub">24 live Shopify MCP runs · 8 lies</div></div>
+        <div class="num" style="color:var(--lie)">0 / 8 lies caught</div>
+      </div>
+      <div class="stat">
+        <div><div class="label">Agent's Tool View Only</div><div class="sub">Misses dropped writes &amp; hidden prices</div></div>
+        <div class="num" style="color:var(--warn)">0 / 8 lies caught</div>
+      </div>
+      <div class="stat highlight">
+        <div><div class="label">AgentProof + Decisions API</div><div class="sub">Carbon wire audit + gemini-decision-1</div></div>
+        <div class="num">8 / 8 lies · 100%</div>
+      </div>`;
+    document.getElementById("tab-note").textContent = "Real https://mcp.shop.com/ traffic across live .myshopify.com merchants (no real orders placed)";
+  } else {
+    bar.innerHTML = `
+      <div class="stat">
+        <div><div class="label">Trusting the Agent</div><div class="sub">48 browser video runs · 17 lies</div></div>
+        <div class="num" style="color:var(--lie)">0 / 17 lies caught</div>
+      </div>
+      <div class="stat">
+        <div><div class="label">Single Gemini Video Call</div><div class="sub">Misses $0.01 errors &amp; silent drops</div></div>
+        <div class="num" style="color:var(--warn)">4 / 17 lies caught</div>
+      </div>
+      <div class="stat highlight">
+        <div><div class="label">AgentProof + Decisions API</div><div class="sub">Hydrogen + Carbon + gemini-decision-1</div></div>
+        <div class="num">17 / 17 lies · 100%</div>
+      </div>`;
+    document.getElementById("tab-note").textContent = "Full browser checkouts with screen video (tests $0.01 & silent-drop bugs unsafe to inject on live stores)";
+  }
 }
 
 function decisionBars(d, usage) {
@@ -278,11 +290,47 @@ function renderVerifierCard(k, v, truthSuccess, lie) {
   </div>`;
 }
 
+function switchTab(kind, runId) {
+  CURRENT_TAB = kind;
+  document.getElementById("tab-shop").classList.toggle("active", kind === "shop");
+  document.getElementById("tab-store").classList.toggle("active", kind === "store");
+  renderStats(kind);
+
+  const subset = RUNS.filter(r => r.kind === kind);
+  const chips = document.getElementById("chips");
+  const picker = document.getElementById("picker");
+  chips.innerHTML = "";
+  picker.innerHTML = "";
+
+  (FEATURED_BY_KIND[kind] || []).forEach(([id, label]) => {
+    const r = subset.find(x => x.id === id);
+    if (!r) return;
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.id = r.id;
+    b.textContent = label;
+    b.onclick = () => selectRun(kind, r.id);
+    chips.appendChild(b);
+  });
+
+  subset.forEach(r => {
+    const lie = r.agent?.success && r.truth?.success === false;
+    const o = document.createElement("option");
+    o.value = r.id;
+    o.textContent = `All ${subset.length} ${kind === "shop" ? "Shopify" : "Video"} runs · ${lie ? "LIE" : r.truth?.success ? "OK" : "FAIL"} — ${r.id}`;
+    picker.appendChild(o);
+  });
+  picker.onchange = () => selectRun(kind, picker.value);
+
+  const defaultId = runId || FEATURED_BY_KIND[kind]?.[0]?.[0] || subset[0]?.id;
+  if (defaultId) selectRun(kind, defaultId);
+}
+
 function selectRun(kind, id) {
   const run = RUNS.find(r => r.kind === kind && r.id === id);
   if (!run) return;
-  document.getElementById("picker").value = kind + ":" + id;
-  document.querySelectorAll("button.chip").forEach(b => b.classList.toggle("active", b.dataset.key === kind + ":" + id));
+  document.getElementById("picker").value = id;
+  document.querySelectorAll("button.chip").forEach(b => b.classList.toggle("active", b.dataset.id === id));
   const verdicts = run.verdicts || {};
   const lie = run.agent?.success && run.truth?.success === false;
   const outcomeBadge = lie
@@ -301,22 +349,27 @@ function selectRun(kind, id) {
       </details>`
     : "";
 
+  const shopBanner = kind === "shop"
+    ? `<div class="shop-banner"><strong>Live Shopify MCP (<code>https://mcp.shop.com/</code>):</strong> Real catalog search &amp; anonymous cart creation at live <code>.myshopify.com</code> merchants — scored against Shopify's real <code>get_cart</code> + <code>lookup_catalog</code> answer key (checkout tools blocked so no money moves).</div>`
+    : "";
+
   const mediaHtml = run.hasVideo
     ? `<div class="card">
         <div class="section-label"><span>Screen Recording (${esc(run.agentModel || "Gemini 4 Argon")} · ${esc(run.seconds)}s)</span><span class="badge subtle">Hidden bug: ${esc(run.mutant)}</span></div>
         <video id="vid" controls autoplay muted playsinline src="./videos/${encodeURIComponent(id)}.mp4"></video>
       </div>`
     : `<div class="card">
-        <div class="section-label"><span>Shopify MCP Calls (What the Agent Saw)</span><span class="badge subtle">Injected fault: ${esc(run.mutant)}</span></div>
+        <div class="section-label"><span>Shopify MCP Tool Calls (What the Agent Saw)</span><span class="badge subtle">Injected fault: ${esc(run.mutant)}</span></div>
         <div class="shop-steps">${(run.tools || []).map((t, idx) => `<div class="shop-step"><div><strong>${idx + 1}. ${esc(t.name)}</strong> <span style="color:var(--muted)">${esc(JSON.stringify(t.args))}</span></div><div style="color:#cfd6e4;margin-top:4px;white-space:pre-wrap">${esc(t.reply)}</div></div>`).join("")}</div>
       </div>`;
 
-  const netTitle = kind === "shop" ? "Raw Shopify Server Wire Log (What Really Reached Shop)" : "Raw Browser HTTP Network Log";
+  const netTitle = kind === "shop" ? "Real Shopify Server Wire Log (What Actually Reached mcp.shop.com)" : "Raw Browser HTTP Network Log";
   const netBody = kind === "shop" ? run.wire : run.network;
 
   document.getElementById("left").innerHTML = `
     <div class="card">
-      <div class="section-label"><span>${kind === "shop" ? "Live Shopify MCP Task" : "Demo Store Task"}</span>${outcomeBadge}</div>
+      <div class="section-label"><span>${kind === "shop" ? "Live Shopify MCP Task" : "Browser Checkout Lab Task"}</span>${outcomeBadge}</div>
+      ${shopBanner}
       <div class="task-prompt">&ldquo;${esc(run.instruction)}&rdquo;</div>
       <div class="compare">
         <div class="cbox">
@@ -324,14 +377,14 @@ function selectRun(kind, id) {
           <div class="v">&ldquo;${esc(run.agent?.claim)}&rdquo;</div>
         </div>
         <div class="cbox ${lie ? 'lie-box' : 'ok-box'}">
-          <div class="k"><span>Server Ground Truth</span>${outcomeBadge}</div>
+          <div class="k"><span>${kind === "shop" ? "Real Shopify Cart Answer Key" : "Server Ground Truth"}</span>${outcomeBadge}</div>
           <div class="v">${esc(run.truth?.reason)}</div>
         </div>
       </div>
     </div>
     ${mediaHtml}
     ${eventsHtml}
-    <details class="fold">
+    <details class="fold" ${kind === "shop" ? "open" : ""}>
       <summary>${netTitle}</summary>
       <div class="fold-body"><pre>${esc(JSON.stringify(netBody, null, 2))}</pre></div>
     </details>
@@ -363,26 +416,8 @@ function selectRun(kind, id) {
 async function init() {
   const data = await (await fetch("./demo-data.json")).json();
   RUNS = data.runs || [];
-  const chips = document.getElementById("chips");
-  const picker = document.getElementById("picker");
-  FEATURED.map(id => RUNS.find(r => r.id === id)).filter(Boolean).forEach(r => {
-    const b = document.createElement("button");
-    b.className = "chip";
-    b.dataset.key = r.kind + ":" + r.id;
-    b.textContent = LABELS[r.id] || r.id;
-    b.onclick = () => selectRun(r.kind, r.id);
-    chips.appendChild(b);
-  });
-  RUNS.forEach(r => {
-    const lie = r.agent?.success && r.truth?.success === false;
-    const o = document.createElement("option");
-    o.value = r.kind + ":" + r.id;
-    o.textContent = `All 72 runs · [${r.kind}] ${lie ? "LIE" : r.truth?.success ? "OK" : "FAIL"} — ${r.id}`;
-    picker.appendChild(o);
-  });
-  picker.onchange = () => { const [k, id] = picker.value.split(":"); selectRun(k, id); };
-  const first = RUNS.find(r => r.id === "two_mugs_discount__discount_not_applied") || RUNS[0];
-  if (first) selectRun(first.kind, first.id);
+  const wantStore = location.hash === "#store";
+  switchTab(wantStore ? "store" : "shop");
 }
 init();
 </script>
