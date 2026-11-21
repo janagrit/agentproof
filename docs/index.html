@@ -29,6 +29,14 @@
   .stat .num { font-size: 20px; font-weight: 700; white-space: nowrap; }
   .stat.highlight .num { color: var(--ok); }
 
+  .pipeline { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; margin-top: 14px; }
+  @media (max-width: 900px) { .pipeline { grid-template-columns: 1fr; } .pipe-arrow { display: none; } }
+  .pipe-box { padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); }
+  .pipe-box .pstep { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+  .pipe-box .pmodel { font-family: ui-monospace, monospace; font-size: 13.5px; font-weight: 700; color: var(--ink); margin: 3px 0 4px; }
+  .pipe-box .pdesc { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+  .pipe-arrow { display: flex; align-items: center; color: var(--muted); font-size: 18px; font-weight: 700; padding: 0 2px; }
+
   .picker-bar { padding: 12px 0; border-bottom: 1px solid var(--border); background: var(--panel); position: sticky; top: 0; z-index: 20; }
   .picker-inner { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .picker-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-right: 4px; }
@@ -128,9 +136,28 @@
       <div class="stat highlight">
         <div>
           <div class="label">AgentProof + Decisions API</div>
-          <div class="sub">Hydrogen + Carbon + gemini-decision-1</div>
+          <div class="sub">Store (17/17) + Live Shopify (8/8)</div>
         </div>
         <div class="num">25 / 25 lies · 100%</div>
+      </div>
+    </div>
+    <div class="pipeline" aria-label="How the 3-model verification pipeline works">
+      <div class="pipe-box">
+        <div class="pstep">Step 1 · Video Perception</div>
+        <div class="pmodel">gemini-4-hydrogen</div>
+        <div class="pdesc">Watches the screen recording and writes down visible cart items, prices, promo messages, and timestamps — without judging.</div>
+      </div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-box">
+        <div class="pstep">Step 2 · Math &amp; Wire Auditor</div>
+        <div class="pmodel">gemini-4-carbon</div>
+        <div class="pdesc">Computes exact expected item &amp; discount totals down to $0.01, and checks real HTTP or live Shopify MCP server logs.</div>
+      </div>
+      <div class="pipe-arrow">&rarr;</div>
+      <div class="pipe-box">
+        <div class="pstep">Step 3 · Calibrated Gate</div>
+        <div class="pmodel">gemini-decision-1</div>
+        <div class="pdesc">Single forward pass (<code>POST /v1beta/decisions</code>, <strong>0 output tokens</strong>) &rarr; calibrated <code>P(succeeded)</code>, failure route &amp; severity.</div>
       </div>
     </div>
   </div>
