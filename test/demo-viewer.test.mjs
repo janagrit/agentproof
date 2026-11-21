@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
 import { startViewer } from "../scripts/demo-viewer.mjs";
+import { rootPath } from "../src/paths.mjs";
 
 test("demo viewer serves HTML, run index, and rejects unknown runs cleanly", async () => {
   const s = await startViewer(0);
@@ -28,4 +30,13 @@ test("demo viewer serves HTML, run index, and rejects unknown runs cleanly", asy
   } finally {
     s.close();
   }
+});
+
+test("GitHub Pages static viewer bundle in docs/ has index.html and 72 redacted runs", () => {
+  assert.ok(existsSync(rootPath("docs", "index.html")));
+  assert.ok(existsSync(rootPath("docs", "demo-data.json")));
+  const data = JSON.parse(readFileSync(rootPath("docs", "demo-data.json"), "utf8"));
+  assert.equal(data.runs.length, 72);
+  assert.ok(data.runs.some(r => r.verdicts?.["agentproof+decision"]?.decision?.task_succeeded));
+  assert.ok(data.runs.some(r => r.verdicts?.["agentproof+wire-decision"]?.decision?.task_succeeded));
 });

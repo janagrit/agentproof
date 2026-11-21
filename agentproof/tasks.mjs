@@ -1,4 +1,4 @@
-// Shared task + mutant loading for collect.mjs and managed.mjs.
+// Shared task + mutant loading for collect.mjs and live-demo.mjs.
 import { readFileSync } from "node:fs";
 import { rootPath } from "../src/paths.mjs";
 
