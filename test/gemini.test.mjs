@@ -1,8 +1,8 @@
 // No network: tests the pure helpers in src/gemini.mjs and verifiers.mjs.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseModelJSON, withRetry, isRetryable, requireModels } from "../src/gemini.mjs";
-import { asVerdict } from "../agentproof/verifiers.mjs";
+import { parseModelJSON, withRetry, isRetryable, requireModels, extractText, decide, DECISIONS_URL } from "../src/gemini.mjs";
+import { asVerdict, asDecisionVerdict } from "../agentproof/verifiers.mjs";
 
 test("parseModelJSON: bare, fenced, with prose, arrays", () => {
   assert.deepEqual(parseModelJSON('{"a":1}'), { a: 1 });
@@ -71,4 +71,76 @@ test("asVerdict only accepts real booleans", () => {
   assert.equal(asVerdict({}).task_succeeded, null);
   assert.equal(asVerdict(null).task_succeeded, null);
   assert.deepEqual(asVerdict({ task_succeeded: true, evidence: "ok" }, { timeline: [] }), { task_succeeded: true, evidence: "ok", timeline: [] });
+});
+
+test("extractText skips thought parts and concatenates real reply parts", () => {
+  assert.equal(extractText({
+    candidates: [{ content: { parts: [
+      { thought: true, text: "internal scratchpad" },
+      { text: '{"task_succeeded":' },
+      { text: " false}" },
+    ] } }],
+    text: "fallback",
+  }), '{"task_succeeded": false}');
+  assert.equal(extractText({ text: '{"a":1}' }), '{"a":1}');
+  assert.equal(extractText({}), "");
+});
+
+test("decide sends POST /v1beta/decisions, retries 429, strips thought, and does not retry 400", quiet(async () => {
+  const seen = [];
+  let n = 0;
+  const fetchImpl = async (url, init) => {
+    seen.push({ url, init });
+    n++;
+    if (n === 1) return { ok: false, status: 429, text: async () => '{"error":{"message":"rate limit"}}' };
+    return {
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({
+        answers: {
+          task_succeeded: { type: "noul", noul: 0.04, confidence: 0.96, thought: "hidden" },
+          failure_mode: { type: "choice", choice: "wrong_total", confidence: 0.95 },
+        },
+        usage: { total_input_tokens: 250, total_output_tokens: 0 },
+      }),
+    };
+  };
+  const out = await decide("sample input", { task_succeeded: { type: "noul", instructions: "ok?" } }, {
+    apiKey: "FAKE_TEST_KEY",
+    model: "gemini-decision-1",
+    fetchImpl,
+    retry: { wait: noWait },
+  });
+  assert.equal(seen.length, 2);
+  assert.equal(seen[0].url, DECISIONS_URL);
+  assert.equal(seen[0].init.headers["x-goog-api-key"], "FAKE_TEST_KEY");
+  assert.deepEqual(JSON.parse(seen[0].init.body), {
+    model: "gemini-decision-1",
+    input: "sample input",
+    questions: { task_succeeded: { type: "noul", instructions: "ok?" } },
+  });
+  assert.equal("thought" in out.answers.task_succeeded, false);
+  assert.equal(out.usage.total_output_tokens, 0);
+
+  const v = asDecisionVerdict(out, "Total was $24 instead of $21.60.");
+  assert.equal(v.task_succeeded, false);
+  assert.match(v.evidence, /P\(succeeded\)=4\.0%, conf=96\.0%, mode=wrong_total/);
+  assert.match(v.evidence, /Total was \$24/);
+
+  let badCalls = 0;
+  await assert.rejects(
+    decide("x", {}, {
+      apiKey: "FAKE_TEST_KEY",
+      fetchImpl: async () => { badCalls++; return { ok: false, status: 400, text: async () => '{"error":{"message":"bad field"}}' }; },
+      retry: { wait: noWait },
+    }),
+    /HTTP 400: bad field/
+  );
+  assert.equal(badCalls, 1);
+}));
+
+test("asDecisionVerdict treats missing or invalid noul probability as null error", () => {
+  assert.equal(asDecisionVerdict({}).task_succeeded, null);
+  assert.equal(asDecisionVerdict({ answers: { task_succeeded: { noul: "0.9" } } }).task_succeeded, null);
+  assert.equal(asDecisionVerdict({ answers: { task_succeeded: { noul: 0.85, confidence: 0.85 } } }).task_succeeded, true);
 });

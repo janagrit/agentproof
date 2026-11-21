@@ -15,7 +15,11 @@
     "shop:mock": "node agentproof/shop-collect.mjs --mock",
     "test": "node --test test/",
     "smoke": "node scripts/smoke.mjs",
-    "check": "node --test test/ && node scripts/smoke.mjs"
+    "check": "node --test test/ && node scripts/smoke.mjs",
+    "demo": "node scripts/demo-viewer.mjs",
+    "live": "node scripts/live-demo.mjs",
+    "stability": "node scripts/stability-report.mjs",
+    "export": "node scripts/export-benchmarks.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",

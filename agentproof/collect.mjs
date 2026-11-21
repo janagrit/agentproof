@@ -19,7 +19,7 @@ import { rootPath, userPath } from "../src/paths.mjs";
 import { hasFfmpeg, toMp4 } from "../src/media.mjs";
 import { requireModels, MODELS } from "../src/gemini.mjs";
 
-const args = parseCli({ flags: ["mock", "redo"], options: { out: undefined, tasks: undefined, mutants: undefined } });
+const args = parseCli({ flags: ["mock", "redo", "headed"], options: { out: undefined, tasks: undefined, mutants: undefined } });
 const mock = args.mock;
 const outRoot = args.out ? userPath(args.out) : rootPath(mock ? "runs_mock" : "runs");
 // Which agent produced these runs. Saved in every run.json and shown in the eval report.
@@ -56,7 +56,7 @@ if (existsSync(outRoot)) {
   }
 }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ headless: !args.headed, slowMo: args.headed ? 250 : 0 });
 
 try {
   for (const task of TASKS) {

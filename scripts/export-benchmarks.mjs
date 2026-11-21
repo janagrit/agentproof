@@ -19,7 +19,12 @@ function verdicts(dir) {
     const m = f.match(/^verdict\.(.+)\.([^.]+)\.json$/);
     if (!m) continue;
     const v = JSON.parse(readFileSync(path.join(dir, f), "utf8"));
-    (out[m[2]] ??= {})[m[1]] = { task_succeeded: v.task_succeeded, evidence: v.evidence ?? "", models: v.meta?.models ?? null };
+    (out[m[2]] ??= {})[m[1]] = {
+      task_succeeded: v.task_succeeded,
+      evidence: v.evidence ?? "",
+      models: v.meta?.models ?? null,
+      ...(v.decision ? { decision: v.decision } : {}),
+    };
   }
   return out; // { tag: { verifier: {...} } }
 }

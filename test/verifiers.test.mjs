@@ -22,10 +22,13 @@ test("blind variants carry the same log but no failure rule", () => {
   assert.doesNotMatch(wireLabel({ hint: false }), /missing|never received|really/i);
 });
 
-test("blind verifiers exist but are opt-in, not in the default sets", () => {
-  for (const n of ["agentproof+network-blind", "agentproof+wire-blind"]) {
+test("blind and decision verifiers exist as opt-in, leaving default v1 sets untouched", () => {
+  for (const n of ["agentproof+network-blind", "agentproof+wire-blind", "decision", "agentproof+decision", "agentproof+wire-decision"]) {
     assert.equal(typeof VERIFIERS[n], "function");
     assert.ok(!VERIFIERS_FOR.store.includes(n) && !VERIFIERS_FOR.shop.includes(n), `${n} must not change default runs`);
   }
-  assert.deepEqual(OPTIONAL_VERIFIERS_FOR, { store: ["agentproof+network-blind"], shop: ["agentproof+wire-blind"] });
+  assert.deepEqual(OPTIONAL_VERIFIERS_FOR, {
+    store: ["agentproof+network-blind", "decision", "agentproof+decision"],
+    shop: ["agentproof+wire-blind", "agentproof+wire-decision"],
+  });
 });

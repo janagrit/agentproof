@@ -24,9 +24,17 @@ export const MODELS = {
   // Baseline: one call, video in, verdict out. Same strong model as author
   // so the comparison isolates the method, not the model.
   baseline: process.env.MODEL_BASELINE || process.env.MODEL_AUTHOR,
+  // Calibrated structured decision gate (Gemini Decisions API, 0 output tokens).
+  decision: process.env.MODEL_DECISION || "gemini-decision-1",
 };
 
-const ENV_FOR = { perceive: "MODEL_PERCEIVE", author: "MODEL_AUTHOR", agent: "MODEL_AGENT (or MODEL_PERCEIVE)", baseline: "MODEL_BASELINE (or MODEL_AUTHOR)" };
+const ENV_FOR = {
+  perceive: "MODEL_PERCEIVE",
+  author: "MODEL_AUTHOR",
+  agent: "MODEL_AGENT (or MODEL_PERCEIVE)",
+  baseline: "MODEL_BASELINE (or MODEL_AUTHOR)",
+  decision: "MODEL_DECISION",
+};
 
 // Fail at startup, naming the missing variable, instead of on the first API call.
 export function requireModels(...keys) {
@@ -86,6 +94,20 @@ export const imagePart = pngPath => ({
   inlineData: { mimeType: "image/png", data: readFileSync(pngPath).toString("base64") },
 });
 
+// Thinking-capable Gemini 4 models can include { thought: true } parts before
+// the final answer. Skip thought parts explicitly when reading responses.
+export function extractText(res) {
+  const parts = res?.candidates?.[0]?.content?.parts;
+  if (Array.isArray(parts)) {
+    const out = parts
+      .filter(p => p && !p.thought && typeof p.text === "string")
+      .map(p => p.text)
+      .join("");
+    if (out) return out;
+  }
+  return typeof res?.text === "string" ? res.text : "";
+}
+
 export async function generate(model, parts, { json = false } = {}) {
   if (!model) throw new Error("Model ID missing. Fill in MODEL_* in .env");
   const ai = getAI();
@@ -94,8 +116,65 @@ export async function generate(model, parts, { json = false } = {}) {
     contents: createUserContent(parts),
     config: json ? { responseMimeType: "application/json" } : {},
   }), { label: `generate(${model})` });
-  if (typeof res.text !== "string" || !res.text) throw new Error(`Empty reply from ${model}`);
-  return res.text;
+  const text = extractText(res);
+  if (!text) throw new Error(`Empty reply from ${model}`);
+  return text;
+}
+
+export const DECISIONS_URL = "https://generativelanguage.googleapis.com/v1beta/decisions";
+
+export const decisionVideoBlock = f => ({ type: "video", uri: f.uri, mime_type: f.mimeType });
+
+export const decisionImageBlock = pngPath => ({
+  type: "image",
+  data: readFileSync(pngPath).toString("base64"),
+  mime_type: "image/png",
+});
+
+// Gemini Decisions API (POST /v1beta/decisions, model gemini-decision-1).
+// Evaluates closed-set questions (noul, choice, score) in a single forward pass
+// with calibrated probabilities and 0 output tokens.
+export async function decide(input, questions, {
+  model = MODELS.decision,
+  apiKey = process.env.GEMINI_API_KEY,
+  url = DECISIONS_URL,
+  fetchImpl = globalThis.fetch,
+  retry = {},
+} = {}) {
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set. Copy .env.example to .env and fill it in.");
+  if (!model) throw new Error("Decision model ID missing.");
+  return withRetry(async () => {
+    const res = await fetchImpl(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({ model, input, questions }),
+    });
+    const raw = await res.text();
+    let body;
+    try { body = JSON.parse(raw); } catch { body = null; }
+    if (!res.ok || !body || body.error) {
+      const msg = body?.error?.message || raw.slice(0, 200);
+      const e = new Error(`Decisions API (${model}) HTTP ${res.status}: ${msg}`);
+      e.status = res.status;
+      throw e;
+    }
+    if (!body.answers || typeof body.answers !== "object") {
+      throw new Error(`Decisions API (${model}) returned no answers: ${raw.slice(0, 120)}`);
+    }
+    const answers = Object.fromEntries(
+      Object.entries(body.answers).map(([k, v]) => {
+        if (v && typeof v === "object") {
+          const { thought, ...rest } = v;
+          return [k, rest];
+        }
+        return [k, v];
+      })
+    );
+    return { answers, usage: body.usage ?? null };
+  }, { label: `decide(${model})`, ...retry });
 }
 
 // Models sometimes wrap JSON in ```json fences or add a sentence around it.
