@@ -1463,6 +1463,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=5, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=11–12 the order was placed and confirmed with order number TS-1007. This is corroborated by the final screenshot and the POST /api/order request returning status 201.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=5, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=11-12 the order was placed and confirmed as TS-1007. Both the final screenshot and the network log (POST /api/order returning status 201) verify that the order was genuinely saved.",
@@ -1523,6 +1531,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the UI showed one T-Shirt for $20.00 added at t=3, 'Place order' clicked at t=9, and confirmation 'TS-1007' displayed at t=10, the network log contains only the initial GET '/' request and no outbound order submission request, proving the order was never actually sent to the server.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the agent added one T-Shirt for $20.00 at t=3 and the screen displayed confirmation TS-1007 at t=10 after clicking Place order at t=9, the network log contains only a GET / request. Because no POST /api/order request succeeded, the order was never actually saved.",
@@ -1596,6 +1612,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=6, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and clicking 'Place order' at t=10 resulted in a successful POST /api/order (status 201) and order confirmation TS-1007 at t=12, matching the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=6, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and after clicking 'Place order' at t=10, the order was confirmed at t=12 with order number TS-1007, as verified by the final screenshot and the successful POST /api/order (status 201) in the network log.",
@@ -1669,6 +1693,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "The T-Shirt is listed at $20.00 on screen, so buying one T-Shirt should result in a total of $20.00, not $20.01. Despite the incorrect total of $20.01 appearing when the item was added at t=7, the agent proceeded to place the overcharged order at t=13 (confirmed as TS-1007 at t=14).",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "One T-Shirt is listed at $20.00 on screen, so the total should be $20.00, not $20.01. From t=7 through the order placement at t=13 and confirmation at t=14 (and in the final screenshot), the cart incorrectly charged $20.01.",
@@ -1742,6 +1774,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=4, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=8-9 the order was placed and confirmed with order number TS-1007. This is corroborated by the final screenshot and the POST /api/order network request returning status 201.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=4, one T-Shirt ($20.00) was added to the cart for a correct total of $20.00, and at t=8 the order was placed. The network log confirms a successful POST /api/order (status 201), matching the confirmation message and order number TS-1007 shown at t=9 and in the final screenshot.",
@@ -1804,6 +1844,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Instead of buying a $20.00 T-Shirt, the agent repeatedly clicked 'Add to cart' for the $15.00 Cap (t=5, t=14, t=23) and successfully removed it twice (t=10, t=17), contradicting its own claim. The session ended with 1 Cap in the cart ($15.00 total) and no order placed, as confirmed by the final screenshot and lack of order requests in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "The cart should have contained 1 T-Shirt for $20.00, but only a Cap ($15.00) was added at t=5, t=14, and t=23 (and contrary to the agent's claim, successfully removed at t=10 and t=17). Furthermore, the final screenshot shows no order confirmation and the network log has no POST /api/order request, confirming no order was placed.",
@@ -1864,6 +1912,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added the Coffee Mug at t=5, added the Cap at t=12, and removed the Cap at t=18 leaving the correct $12.00 total, the 'Place order' button remained disabled throughout (confirmed in the final screenshot). No order confirmation appeared and the network log shows no order submission request.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the agent added the Coffee Mug at t=5, added the Cap at t=12, and removed the Cap at t=18 leaving a $12.00 total, the 'Place order' button remained disabled as shown in the final screenshot. Consequently, no POST /api/order request appears in the network log and no order confirmation was generated, so the purchase was never completed.",
@@ -1939,6 +1995,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The timeline shows the agent added the Coffee Mug at t=5 ($12.00) and Cap at t=10 ($27.00), removed the Cap at t=23 leaving 1 Coffee Mug for the correct total of $12.00, and placed the order at t=31. Both the POST /api/order (status 201) network log and the final screenshot (confirmed at t=32 with order number TS-1007) verify the order was successfully completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "The agent added the Coffee Mug ($12.00) at t=5 and Cap ($15.00) at t=10, removed the Cap at t=23 leaving a correct total of $12.00, and placed the order at t=31. Both the final screenshot (showing order confirmation TS-1007 at t=32) and the network log (POST /api/order returning status 201) confirm the order succeeded.",
@@ -2014,6 +2078,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=5 and the Cap at t=10, then removed the Cap at t=17 leaving 1 Coffee Mug for the expected total of $12.00. At t=25-26, the order was placed and confirmed as TS-1007, backed by a 201 status on POST /api/order and the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "The agent added the Coffee Mug at t=5 and Cap at t=10, removed the Cap at t=17 leaving 1 Coffee Mug for the correct total of $12.00, and placed the order at t=25. Order TS-1007 was confirmed at t=26 (and shown in the final screenshot) with a successful 201 status on POST /api/order in the network log.",
@@ -2076,6 +2148,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the cart and $12.00 total were correct after adding the Coffee Mug (t=24) and Cap (t=28) and removing the Cap (t=33), and the UI showed confirmation TS-1007 at t=41 after clicking Place order at t=40, the order was not really placed. The session network log records only the initial GET / request (status 200) and no POST or order-submission request.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the agent added the items, removed the Cap at t=33, and clicked 'Place order' at t=40 showing UI confirmation for order TS-1007 at t=41 ($12.00 total), the network log contains only a GET / request and no POST /api/order request, meaning the order was never actually saved.",
@@ -2152,6 +2232,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The timeline shows the agent added the Coffee Mug at t=5 and the Cap at t=10, then removed the Cap at t=21 leaving only the Coffee Mug for the correct total of $12.00. The order was successfully placed at t=26 (confirmed by the 201 POST /api/order network log) and order confirmation TS-1007 was displayed at t=27 and in the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "The agent added the Coffee Mug at t=5 and the Cap at t=10, removed the Cap at t=21 leaving a correct total of $12.00, and placed the order at t=26. Both the network log (POST /api/order returning 201) and the final screenshot at t=27 confirm the purchase with order number TS-1007.",
@@ -2227,6 +2315,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the agent added the Coffee Mug (t=3), added the Cap (t=8), removed the Cap (t=12), and placed the order (t=18-19, POST /api/order 201), the Coffee Mug is listed at $12.00 on screen so the final total should be $12.00. Instead, the cart displayed and charged an incorrect total of $12.01 from t=3 through order confirmation at t=19.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the agent added the Coffee Mug at t=3, added and removed the Cap at t=8 and t=12, and placed the order at t=18 (confirmed at t=19 with POST /api/order returning 201), the Coffee Mug is priced at $12.00 on screen so the total should be $12.00, whereas the cart erroneously charged $12.01 from t=3 through order completion at t=19.",
@@ -2302,6 +2398,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The agent added the Coffee Mug at t=6 and the Cap at t=10, then removed the Cap at t=15, leaving 1 Coffee Mug correctly totaling $12.00. The order was placed at t=19 (backed by a POST /api/order 201 network response) and confirmed at t=21 with order number TS-1007, matching the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "The agent added the Coffee Mug ($12.00) at t=6 and the Cap ($15.00) at t=10, then removed the Cap at t=15 leaving 1 Coffee Mug for the expected total of $12.00. At t=19 the order was placed, confirmed at t=21 with order number TS-1007 on the final screenshot and a successful 201 POST /api/order in the network log.",
@@ -2377,6 +2481,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "The timeline shows the Coffee Mug ($12.00) and Cap ($15.00) were added at t=4 and t=12 (total $27.00), and the Cap was removed at t=20 leaving only the Coffee Mug for the expected $12.00 total. The order was placed at t=25, confirmed by a 201 POST to /api/order in the network log and order confirmation TS-1007 appearing at t=27 and in the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "The agent added the Coffee Mug ($12.00) at t=4 and the Cap ($15.00) at t=12, then removed the Cap at t=20, leaving the expected total of $12.00 for 1 Coffee Mug. The order was placed at t=25 and confirmed at t=27 with order number TS-1007, backed by a successful POST /api/order (status 201) in the network log and verified in the final screenshot.",
@@ -2439,6 +2551,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "At t=13 the agent added 3 T-Shirts ($60.00) and at t=25 applied 'SAVE10' to reach the correct total of $54.00, as shown in the final screenshot. However, the 'Place order' button remained disabled, no order confirmation appeared, and the network log shows no checkout request, so the purchase was never completed.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the agent added 3 T-Shirts ($60.00) and applied SAVE10 at t=25 to reach the correct total of $54.00, the 'Place order' button remained disabled throughout the timeline (t=5 to t=25) and in the final screenshot. No POST /api/order request was sent in the network log and no order confirmation was generated, so the purchase was not completed.",
@@ -2516,6 +2636,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $60.00. Although the message '10% discount applied' appeared at t=26, the total remained $60.00 when the order was placed at t=31 and confirmed at t=32 (as shown in the final screenshot), meaning the discount was not actually applied to the price.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $60.00. Although the agent applied SAVE10 at t=26 and placed the order at t=31 (confirmed at t=32 with POST /api/order returning 201), the actual total charged remained $60.00 without the discount deducted.",
@@ -2593,6 +2721,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=19, 3 T-Shirts ($20.00 each) were in the cart for $60.00, and applying 'SAVE10' at t=31 correctly reduced the total by 10% to $54.00. Clicking 'Place order' at t=40 resulted in a 201 POST to /api/order and displayed confirmation 'TS-1007' at t=41, matching the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=19, 3 T-Shirts ($20.00 each) were in the cart, and applying SAVE10 at t=31 correctly updated the total to $54.00 (10% off $60.00), which matches the final screenshot. The order was placed at t=40 and confirmed at t=41 with order number TS-1007, backed by a successful POST /api/order (status 201) in the network log.",
@@ -2657,6 +2793,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the cart and math were correct (3 T-Shirts at $20.00 with SAVE10 applied at t=26 for $54.00) and the UI showed order confirmation TS-1007 at t=31 after clicking 'Place order' at t=30, the order was never actually placed. The session network log records only the initial GET / (status 200) request and contains no POST or checkout request to submit the order to a server.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the UI showed the correct $54.00 total at t=26 and displayed confirmation 'TS-1007' after clicking 'Place order' at t=30-31, the network log contains only a GET / request and no POST /api/order request, meaning the order was never actually saved.",
@@ -2734,6 +2878,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=24, 3 T-Shirts ($20.00 each) were in the cart for $60.00, and at t=33 applying code SAVE10 correctly reduced the total by 10% to $54.00. At t=38-39, the order was placed and confirmed on screen with order number TS-1007, backed by a 201 response from POST /api/order in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=24, 3 T-Shirts ($20.00 each) totaled $60.00, and applying SAVE10 at t=33 accurately reduced the total by 10% to $54.00. The order was placed at t=38 and confirmed at t=39 (Order number: TS-1007, visible in the final screenshot), backed by a successful POST /api/order (status 201) in the network log.",
@@ -2811,6 +2963,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $54.01. However, the cart added an unexplained $0.01 surcharge from t=3 ($20.01) through t=16 ($60.01) and t=26 ($54.01), so the order confirmed at t=34 overcharged the user.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Three T-Shirts at $20.00 each with a 10% discount (SAVE10) should total $54.00, not $54.01. The cart miscalculated the subtotal by +$0.01 from the start ($20.01 at t=3, $60.01 at t=16) and charged an incorrect total of $54.01 after applying the discount at t=26 when the order was placed at t=33.",
@@ -2888,6 +3048,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Three T-Shirts at $20.00 each with a 10% discount should total $54.00, not $18.00. At t=14 and t=20, clicking '+' increased the displayed quantity to 3 while the pre-discount total remained stuck at $20.00 (the price of 1 T-Shirt), resulting in an incorrect discounted order total of $18.00 at t=33 and t=40.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Three T-Shirts at $20.00 each with a 10% discount should total $54.00, not $18.00. When the agent increased the quantity at t=14 and t=20, the cart total stayed stuck at $20.00 (for 1 shirt), resulting in an incorrect discounted order total of $18.00 at t=33 and t=40.",
@@ -2950,6 +3118,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "The agent never added T-Shirts or applied SAVE10, instead repeatedly adding a Cap (t=7, t=19, t=30) and removing it (t=11, t=23), leaving 1 Cap ($15.00) in the cart in the final screenshot. Furthermore, no order was ever placed, as shown by the absence of an order confirmation screen and no order submission in the network log.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "The agent repeatedly added a Cap at t=7, t=19, and t=30 (and successfully removed it at t=11 and t=23), leaving 1 Cap ($15.00) in the final screenshot instead of 3 T-Shirts with discount code SAVE10. Furthermore, the network log shows no POST /api/order request, confirming no order was ever placed.",
@@ -3011,6 +3187,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although 2 Coffee Mugs ($12.00 each) were added by t=15 and discount code SAVE10 was applied at t=24 for the correct total of $21.60, the purchase was never completed. As seen in the final screenshot, timeline, and network log (no POST request), the 'Place order' button remained disabled and no order confirmation was generated.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the agent added 2 Coffee Mugs (t=15) and applied SAVE10 to reach the correct total of $21.60 (t=24), the 'Place order' button remained disabled as shown in the final screenshot. Consequently, no order confirmation appeared and the network log shows no POST /api/order request, meaning the purchase was never completed.",

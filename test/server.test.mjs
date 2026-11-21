@@ -7,9 +7,9 @@ import path from "node:path";
 import { startServer } from "../app/server.mjs";
 
 // Raw request so paths like /__evidence/../x are sent exactly as written.
-function request(port, method, urlPath, body) {
+function request(port, method, urlPath, body, headers = {}) {
   return new Promise((resolve, reject) => {
-    const req = http.request({ host: "127.0.0.1", port, method, path: urlPath }, res => {
+    const req = http.request({ host: "127.0.0.1", port, method, path: urlPath, headers }, res => {
       let data = "";
       res.on("data", d => (data += d));
       res.on("end", () => resolve({ status: res.statusCode, body: data }));
@@ -72,6 +72,32 @@ test("oversize evidence gets 413 and is not saved", async () => {
     const r = await request(server.port, "POST", "/__evidence/big.bin", "x".repeat(100));
     assert.equal(r.status, 413);
     assert.deepEqual(readdirSync(root), []);
+  } finally {
+    server.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("oversize order gets 413 and is not recorded", async () => {
+  const server = await startServer(0, "", { maxOrderBytes: 32 });
+  try {
+    const r = await request(server.port, "POST", "/api/order", "x".repeat(128));
+    assert.equal(r.status, 413);
+    assert.deepEqual(server.orders, []);
+  } finally {
+    server.close();
+  }
+});
+
+test("evidenceToken rejects missing or wrong token and accepts matching token", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "agentproof-test-"));
+  const server = await startServer(0, "", { evidenceDir: root, evidenceToken: "sec-123" });
+  try {
+    assert.equal((await request(server.port, "POST", "/__evidence/a.txt", "no")).status, 401);
+    assert.equal((await request(server.port, "POST", "/__evidence/a.txt", "no", { "x-evidence-token": "wrong" })).status, 401);
+    assert.deepEqual(readdirSync(root), []);
+    assert.equal((await request(server.port, "POST", "/__evidence/a.txt", "ok", { "x-evidence-token": "sec-123" })).status, 201);
+    assert.equal(readFileSync(path.join(root, "a.txt"), "utf8"), "ok");
   } finally {
     server.close();
     rmSync(root, { recursive: true, force: true });

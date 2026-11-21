@@ -14,6 +14,7 @@
 // the official skill in your coding agent:
 //   npx skills add google-gemini/gemini-skills --skill gemini-interactions-api
 import "dotenv/config";
+import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { startServer } from "../app/server.mjs";
@@ -45,7 +46,7 @@ try {
   process.exit(1);
 }
 
-const PROMPT = (task, url) => `
+const PROMPT = (task, url, token) => `
 You are a shopping agent. Use a real headless browser (install Playwright for
 Node or Python in your sandbox if needed) to complete this task on the web store
 at ${url}
@@ -57,10 +58,10 @@ Requirements:
    and take a screenshot after every action.
 2. Save a HAR network log of the session (Playwright recordHar).
 3. When finished, upload your evidence back to the store with curl:
-     curl --data-binary @video.webm ${url}/__evidence/video.webm
-     curl --data-binary @final.png ${url}/__evidence/final.png
-     curl --data-binary @session.har ${url}/__evidence/session.har
-   Also upload each step screenshot as step_<n>.png.
+     curl -H "x-evidence-token: ${token}" --data-binary @video.webm ${url}/__evidence/video.webm
+     curl -H "x-evidence-token: ${token}" --data-binary @final.png ${url}/__evidence/final.png
+     curl -H "x-evidence-token: ${token}" --data-binary @session.har ${url}/__evidence/session.har
+   Also upload each step screenshot as step_<n>.png with the same header.
 4. Your LAST line of output must be exactly one JSON object:
    {"success": true|false, "claim": "one sentence: what you did and the result"}
 `;
@@ -97,11 +98,12 @@ for (const task of TASKS) {
     if (existsSync(path.join(runDir, "run.json")) && !args.redo) { console.log(`skip ${id}`); continue; }
     mkdirSync(runDir, { recursive: true });
 
-    const server = await startServer(PORT, mutant === "none" ? "" : mutant, { evidenceDir: runDir });
+    const token = randomUUID();
+    const server = await startServer(PORT, mutant === "none" ? "" : mutant, { evidenceDir: runDir, evidenceToken: token });
     const t0 = Date.now();
     let agent, raw;
     try {
-      raw = await callAgent(PROMPT(task.instruction, PUBLIC_URL));
+      raw = await callAgent(PROMPT(task.instruction, PUBLIC_URL, token));
       agent = { ...parseClaim(raw.output_text || raw.outputText || ""), steps: raw.steps ?? null };
     } catch (e) {
       agent = { success: false, claim: `Agent call failed: ${e.message}`, steps: null };

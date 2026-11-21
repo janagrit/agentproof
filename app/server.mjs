@@ -10,10 +10,17 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(path.join(dir, "index.html"), "utf8");
 
 export const MAX_EVIDENCE_BYTES = 200 * 1024 * 1024;
+export const MAX_ORDER_BYTES = 64 * 1024;
 
 // Starts the store. port 0 picks a free port; read it back with server.port.
 // Rejects if the port cannot be bound (e.g. EADDRINUSE) instead of hanging.
-export function startServer(port, mutant = "", { evidenceDir, maxEvidenceBytes = MAX_EVIDENCE_BYTES } = {}) {
+export function startServer(port, mutant = "", {
+  evidenceDir,
+  evidenceToken = "",
+  maxEvidenceBytes = MAX_EVIDENCE_BYTES,
+  maxOrderBytes = MAX_ORDER_BYTES,
+  host = "127.0.0.1",
+} = {}) {
   const page = html.replace(
     "<!--MUTANT-->",
     mutant ? `<script>window.__MUTANT__=${JSON.stringify(mutant)}</script>` : ""
@@ -24,6 +31,11 @@ export function startServer(port, mutant = "", { evidenceDir, maxEvidenceBytes =
     // so they send their screenshots / video / HAR back here).
     // curl --data-binary @shot.png https://<public-url>/__evidence/shot.png
     if (req.method === "POST" && req.url.startsWith("/__evidence/") && evidenceDir) {
+      if (evidenceToken && req.headers["x-evidence-token"] !== evidenceToken) {
+        res.writeHead(401, { connection: "close" });
+        res.end("unauthorized");
+        return;
+      }
       let name;
       try { name = path.basename(decodeURIComponent(req.url.slice("/__evidence/".length))); } catch { name = ""; }
       if (!name || name === "." || name === "..") name = "upload.bin";
@@ -50,9 +62,23 @@ export function startServer(port, mutant = "", { evidenceDir, maxEvidenceBytes =
       return;
     }
     if (req.method === "POST" && req.url === "/api/order") {
-      let body = "";
-      req.on("data", d => (body += d));
+      const chunks = [];
+      let size = 0, tooBig = false;
+      req.on("data", d => {
+        if (tooBig) return;
+        size += d.length;
+        if (size > maxOrderBytes) {
+          tooBig = true;
+          chunks.length = 0;
+          res.writeHead(413, { connection: "close" });
+          res.end("order payload too large");
+          return;
+        }
+        chunks.push(d);
+      });
       req.on("end", () => {
+        if (tooBig) return;
+        const body = Buffer.concat(chunks).toString("utf8");
         try { orders.push(JSON.parse(body)); } catch { orders.push({ malformed: body }); }
         res.writeHead(201, { "content-type": "application/json" });
         res.end(JSON.stringify({ ok: true }));
@@ -65,7 +91,7 @@ export function startServer(port, mutant = "", { evidenceDir, maxEvidenceBytes =
   server.orders = orders;
   return new Promise((resolve, reject) => {
     server.once("error", reject);
-    server.listen(port, () => {
+    server.listen(port, host, () => {
       server.off("error", reject);
       server.port = server.address().port;
       resolve(server);
