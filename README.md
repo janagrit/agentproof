@@ -39,12 +39,18 @@ agent's runs are not scripted by us.
 Metrics: accuracy, **agent lies caught** (agent said success, server says no),
 **false alarms** (real success flagged as failure).
 
-**Gemini 4 Periodic Table roles:** **`gemini-4-argon`** runs as the browser and
-Shop MCP shopping agent; **`gemini-4-hydrogen`** handles fast video perception
-(timestamps + screen state); **`gemini-4-carbon`** performs exact arithmetic and
-network/wire auditing; **`gemini-decision-1`** (`POST /v1beta/decisions`)
-produces calibrated probabilities, failure routing and severity scores in 0
-output tokens.
+## Gemini 4 Periodic Table & Model Specialization
+
+AgentProof maps each verification stage to the right **Gemini 4 Periodic Table**
+element (`src/gemini.mjs`, configurable in `.env` — including swapping in
+`Neon` — without touching code) instead of asking one model to do everything:
+
+| Periodic Table Model | Role (`src/gemini.mjs`) | Why this element | Where it runs |
+|---|---|---|---|
+| **Hydrogen** (`gemini-4-hydrogen`) | `MODEL_PERCEIVE` | Fastest, lowest-cost multimodal pass: watches `video.mp4` and transcribes timestamped screen state without judging | Step 1 of `agentproof`, `agentproof+network`, `agentproof+decision` |
+| **Argon** (`gemini-4-argon`) | `MODEL_AGENT` | Capable mid-tier autonomous actor: drives the 20-step Playwright browser loop and 15-step Shop MCP tool loop | All 48 Store runs + 48 Trial-2 runs + 24 Live Shop MCP runs |
+| **Carbon** (`gemini-4-carbon`) | `MODEL_AUTHOR` / `MODEL_BASELINE` | Strongest reasoning element: computes exact item/quantity/discount math to the cent and audits HTTP/MCP wire logs | Judge in `agentproof*` and fair single-call `single` baseline |
+| **Decisions API** (`gemini-decision-1`) | `MODEL_DECISION` | Single forward pass (`POST /v1beta/decisions`), **0 output tokens**: calibrated `noul` probability, `choice` failure routing, `score` severity | `decision`, `agentproof+decision`, `agentproof+wire-decision` |
 
 ## Setup
 
