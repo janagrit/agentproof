@@ -109,6 +109,10 @@
   .meta-foot { color: var(--muted); font-size: 11.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
 
   pre { margin: 0; font-size: 12px; line-height: 1.45; color: #cfd6e4; white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto; background: var(--panel2); padding: 12px; border-radius: 8px; }
+  .btn.primary { border-color: rgba(88,166,255,.5); background: rgba(88,166,255,.16); color: #8cc4ff; }
+  #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 9999; align-items: center; justify-content: center; padding: 24px; }
+  #modal.open { display: flex; }
+  .modal-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; max-width: 1040px; width: 100%; }
 </style>
 </head>
 <body>
@@ -117,9 +121,10 @@
     <div class="hero-top">
       <div class="hero-title">
         <h1>AgentProof</h1>
-        <p>AI agents say <strong>"Done!"</strong> when they aren't. Switch between our <strong>24 live Shopify merchant runs</strong> (real Shop MCP carts) and <strong>48 full-checkout video runs</strong> below to see how multi-model verification catches every lie.</p>
+        <p>AI agents say <strong>"Done!"</strong> when they aren't. Switch between our <strong>48 full-checkout video runs</strong> and <strong>24 live Shopify merchant runs</strong> (real Shop MCP carts) below to see how multi-model verification catches every lie.</p>
       </div>
       <div class="actions">
+        <button class="btn primary" onclick="openOverview()">&#9654; Watch Demo Video</button>
         <a class="btn" href="https://github.com/janagrit/agentproof" target="_blank" rel="noopener">GitHub Repo &rarr;</a>
       </div>
     </div>
@@ -151,12 +156,12 @@
 <div class="tabs-bar">
   <div class="wrap">
     <div class="tabs-row">
-      <button class="tab-btn active" id="tab-shop" onclick="switchTab('shop')">
+      <button class="tab-btn active" id="tab-store" onclick="switchTab('store')">
+        Browser Checkout Video Lab (48 Video Runs)
+      </button>
+      <button class="tab-btn" id="tab-shop" onclick="switchTab('shop')">
         <span class="live-dot"></span>
         Live Shopify (Shop MCP · 24 Real Merchant Runs)
-      </button>
-      <button class="tab-btn" id="tab-store" onclick="switchTab('store')">
-        Browser Checkout Video Lab (48 Video Runs)
       </button>
       <span class="tab-note" id="tab-note"></span>
     </div>
@@ -175,7 +180,27 @@
   </main>
 </div>
 
+<div id="modal" onclick="if(event.target.id==='modal')closeOverview()">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <strong>AgentProof — Demo Video</strong>
+      <button class="chip" onclick="closeOverview()">Close &times;</button>
+    </div>
+    <video id="overview-vid" controls playsinline preload="metadata" src="./proof.mp4"></video>
+  </div>
+</div>
+
 <script>
+function openOverview() {
+  document.getElementById("modal").classList.add("open");
+  const v = document.getElementById("overview-vid");
+  if (v) v.play().catch(() => {});
+}
+function closeOverview() {
+  const v = document.getElementById("overview-vid");
+  if (v) v.pause();
+  document.getElementById("modal").classList.remove("open");
+}
 const FEATURED_BY_KIND = {
   shop: [
     ["hoodie_m_to_l__update_silently_dropped", "Dropped Size Change (M → L)"],
@@ -416,8 +441,8 @@ function selectRun(kind, id) {
 async function init() {
   const data = await (await fetch("./demo-data.json")).json();
   RUNS = data.runs || [];
-  const wantStore = location.hash === "#store";
-  switchTab(wantStore ? "store" : "shop");
+  const wantShop = location.hash === "#shop";
+  switchTab(wantShop ? "shop" : "store");
 }
 init();
 </script>
