@@ -14,7 +14,8 @@ import { parseCli, list } from "../src/cli.mjs";
 import { rootPath, userPath } from "../src/paths.mjs";
 import { requireModels } from "../src/gemini.mjs";
 
-const args = parseCli({ flags: ["redo"], options: { runs: undefined, tag: "v1", verifiers: undefined, results: undefined } });
+const args = parseCli({ flags: ["redo"], options: { runs: undefined, tag: "v1", verifiers: undefined, results: undefined, concurrency: "1" } });
+const concurrency = Math.max(1, Number.parseInt(args.concurrency, 10) || 1);
 const runsDir = args.runs ? userPath(args.runs) : rootPath("runs");
 const resultsDir = args.results ? userPath(args.results) : rootPath("results");
 const tag = args.tag;
@@ -73,34 +74,45 @@ const summary = [];
 const failures = [];
 
 for (const name of names) {
-  const rows = [];
+  const slots = new Array(runIds.length);
   const models = modelsFor(name);
-  for (const id of runIds) {
-    const dir = path.join(runsDir, id);
-    const run = JSON.parse(readFileSync(path.join(dir, "run.json"), "utf8"));
-    const cache = path.join(dir, `verdict.${name}.${tag}.json`);
-    let v = null;
-    if (existsSync(cache) && !args.redo) {
-      const cached = JSON.parse(readFileSync(cache, "utf8"));
-      if (cached.task_succeeded === null) {
-        v = null; // errored last time (e.g. rate limit): try again
-      } else if (!sameModels(cached.meta?.models, models)) {
-        console.warn(`\n  ${id}: cached ${name} verdict used ${JSON.stringify(cached.meta?.models ?? "unknown models")}, now ${JSON.stringify(models)}. Recomputing.`);
-      } else {
-        v = cached;
+  let nextIdx = 0;
+  const worker = async () => {
+    while (true) {
+      const idx = nextIdx++;
+      if (idx >= runIds.length) break;
+      const id = runIds[idx];
+      const dir = path.join(runsDir, id);
+      const run = JSON.parse(readFileSync(path.join(dir, "run.json"), "utf8"));
+      const cache = path.join(dir, `verdict.${name}.${tag}.json`);
+      let v = null;
+      if (existsSync(cache) && !args.redo) {
+        const cached = JSON.parse(readFileSync(cache, "utf8"));
+        if (cached.task_succeeded === null) {
+          v = null; // errored last time (e.g. rate limit): try again
+        } else if (!sameModels(cached.meta?.models, models)) {
+          console.warn(`\n  ${id}: cached ${name} verdict used ${JSON.stringify(cached.meta?.models ?? "unknown models")}, now ${JSON.stringify(models)}. Recomputing.`);
+        } else {
+          v = cached;
+        }
       }
+      if (!v) {
+        try { v = await VERIFIERS[name](run, dir); }
+        catch (e) { v = { task_succeeded: null, evidence: `ERROR ${e.message}` }; }
+        v = { ...v, meta: { verifier: name, models, at: new Date().toISOString() } };
+        writeFileSync(cache, JSON.stringify(v, null, 2));
+      }
+      const correct = v.task_succeeded === run.truth.success;
+      slots[idx] = {
+        row: { id, mutant: run.mutant, agentClaimed: run.agent.success, truth: run.truth.success, said: v.task_succeeded, correct },
+        failure: !correct ? { verifier: name, id, truth: run.truth.reason, said: v.task_succeeded, evidence: v.evidence } : null,
+      };
+      process.stdout.write(correct ? "." : v.task_succeeded === null ? "E" : "x");
     }
-    if (!v) {
-      try { v = await VERIFIERS[name](run, dir); }
-      catch (e) { v = { task_succeeded: null, evidence: `ERROR ${e.message}` }; }
-      v = { ...v, meta: { verifier: name, models, at: new Date().toISOString() } };
-      writeFileSync(cache, JSON.stringify(v, null, 2));
-    }
-    const correct = v.task_succeeded === run.truth.success;
-    rows.push({ id, mutant: run.mutant, agentClaimed: run.agent.success, truth: run.truth.success, said: v.task_succeeded, correct });
-    if (!correct) failures.push({ verifier: name, id, truth: run.truth.reason, said: v.task_succeeded, evidence: v.evidence });
-    process.stdout.write(correct ? "." : v.task_succeeded === null ? "E" : "x");
-  }
+  };
+  await Promise.all(Array.from({ length: Math.min(concurrency, runIds.length) }, () => worker()));
+  const rows = slots.map(s => s.row);
+  for (const s of slots) if (s.failure) failures.push(s.failure);
   console.log(` ${name}`);
   summary.push({ name, ...scoreRows(rows) });
 }

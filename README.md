@@ -3,7 +3,7 @@
 AI agents say "Done!" when they aren't. AgentProof watches what the agent
 actually did and checks the claim.
 
-Gemini 4 NYC Hackathon, Problem Statement One (5 Sigma).
+Gemini 4 NYC Hackathon, Problem Statement One (5 Sigma). **[Watch the demo video (1:08)](docs/proof.mov)**
 
 ![The lie](docs/the-lie.png)
 
@@ -62,6 +62,25 @@ npm run check     # both
 Run `npm run check` before trusting any new numbers. Scripts work from any
 directory; outputs always go under the repo root unless you pass `--out` /
 `--runs` / `--results`.
+
+## Interactive demo & live agent
+
+```bash
+npm run demo                                                   # local replay & audit UI at http://localhost:4100 (no API key)
+npm run live -- --mock                                         # visible browser rehearsal with live HUD (no API key)
+npm run live                                                   # live Gemini agent on discount trap + Decisions API audit
+npm run live -- --task one_tee --mutant order_silently_fails   # live Gemini agent on silent network drop
+```
+
+- **`npm run demo`** (`scripts/demo-viewer.mjs`) serves a local Audit & Replay
+  Viewer (`http://localhost:4100`, or `PORT=...`) over recorded Store and Shop
+  runs—replaying screen video with click-to-seek perception timestamps,
+  network/wire logs, every verifier's verdict, and Decisions API probability
+  bars alongside the hidden answer key.
+- **`npm run live`** (`scripts/live-demo.mjs`) opens a visible Chromium window
+  with a live HUD, runs the shopping agent step-by-step against a hidden store
+  bug, records the video, and immediately audits the agent's claim with
+  `agentproof+decision` (outputs go to `runs_live/`).
 
 ## Run
 
@@ -297,9 +316,14 @@ src/                   shared code
   media.mjs            ffmpeg helpers
 test/                  unit tests (node --test, no API key, no browser)
 scripts/
+  demo-viewer.mjs      interactive replay & verifier comparison UI (npm run demo)
+  live-demo.mjs        visible browser agent + live HUD + audit card (npm run live)
+  export-benchmarks.mjs exports redacted runs + reports to benchmarks/ (npm run export)
+  stability-report.mjs judge-repeat & blind-vs-hinted stability report (npm run stability)
   smoke.mjs            end-to-end mock run
   effort-chart.mjs     builds the agent-effort charts in docs/ from runs/
-docs/                  images for this README
+benchmarks/            redacted, committable run logs, verdicts and markdown reports
+docs/                  images and demo clip for this README
 ```
 
 Generated when you run things (git-ignored):
