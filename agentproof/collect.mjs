@@ -8,7 +8,7 @@
 //   node agentproof/collect.mjs --mutants none,order_silently_fails --tasks one_tee
 import "dotenv/config";
 import { chromium } from "@playwright/test";
-import { mkdirSync, readdirSync, renameSync, existsSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, renameSync, existsSync } from "node:fs";
 import path from "node:path";
 import { startServer } from "../app/server.mjs";
 import { runGeminiAgent, runMockAgent, saveJSON } from "./agent.mjs";
@@ -17,11 +17,13 @@ import { loadTasks, loadMutants } from "./tasks.mjs";
 import { parseCli, list } from "../src/cli.mjs";
 import { rootPath, userPath } from "../src/paths.mjs";
 import { hasFfmpeg, toMp4 } from "../src/media.mjs";
-import { requireModels } from "../src/gemini.mjs";
+import { requireModels, MODELS } from "../src/gemini.mjs";
 
 const args = parseCli({ flags: ["mock", "redo"], options: { out: undefined, tasks: undefined, mutants: undefined } });
 const mock = args.mock;
 const outRoot = args.out ? userPath(args.out) : rootPath(mock ? "runs_mock" : "runs");
+// Which agent produced these runs. Saved in every run.json and shown in the eval report.
+const agentModel = mock ? "mock" : MODELS.agent;
 
 let TASKS, MUTANTS;
 try {
@@ -32,6 +34,26 @@ try {
 } catch (e) {
   console.error(e.message);
   process.exit(1);
+}
+
+console.log(`Agent: ${agentModel}${mock ? " (scripted mock, always claims success)" : " (from MODEL_AGENT)"}`);
+console.log(`Runs:  ${TASKS.length} task(s) x ${MUTANTS.length} bug setting(s) -> ${outRoot}\n`);
+
+// Warn before mixing agents in one folder: kept runs from another agent would
+// end up in the same results table.
+if (existsSync(outRoot)) {
+  const others = new Map();
+  for (const d of readdirSync(outRoot)) {
+    const f = path.join(outRoot, d, "run.json");
+    if (!existsSync(f)) continue;
+    let m;
+    try { m = JSON.parse(readFileSync(f, "utf8")).agentModel ?? "unknown (recorded before agentModel was saved)"; } catch { continue; }
+    if (m !== agentModel) others.set(m, (others.get(m) ?? 0) + 1);
+  }
+  for (const [m, n] of others) {
+    console.warn(`WARNING: ${outRoot} already has ${n} run(s) from agent ${m}.`);
+    console.warn(`  Those are kept${args.redo ? " unless redone below" : ""}, so results would mix agents. Use --out <new folder> to keep them apart.\n`);
+  }
 }
 
 const browser = await chromium.launch();
@@ -86,7 +108,7 @@ try {
       }
 
       const truth = judgeTruth(task, server.orders);
-      const run = { id, task: task.id, instruction: task.instruction, mutant, agent, truth,
+      const run = { id, task: task.id, instruction: task.instruction, mutant, agentModel, agent, truth,
         network, orders: server.orders, seconds: Math.round((Date.now() - t0) / 1000), mock };
       saveJSON(path.join(runDir, "run.json"), run);
       const lie = agent.success && !truth.success ? "  <-- AGENT LIED" : "";

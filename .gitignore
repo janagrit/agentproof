@@ -6,6 +6,9 @@ playwright-report
 runs
 runs_mock
 runs_managed
+runs_shop
+runs_shop_mock
+runs_*/
 results
 rec2test/out
 out

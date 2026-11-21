@@ -1,0 +1,38 @@
+[
+  {
+    "id": "rain_jacket_m",
+    "instruction": "Put one rain jacket in size M, under $120, in a cart.",
+    "expected": { "quantity": 1, "options": { "size": "M" }, "max_price": 12000, "currency": "USD" },
+    "mock": { "query": "rain jacket", "pick": { "size": "M" } }
+  },
+  {
+    "id": "black_socks",
+    "instruction": "Add one pair of black socks under $20 to a cart.",
+    "expected": { "quantity": 1, "options": { "color": "Black" }, "max_price": 2000, "currency": "USD" },
+    "mock": { "query": "black socks", "pick": { "color": "Black" } }
+  },
+  {
+    "id": "two_white_tees_l",
+    "instruction": "Add 2 white t-shirts in size L, under $30 each, to a cart.",
+    "expected": { "quantity": 2, "options": { "size": "L", "color": "White" }, "max_price": 3000, "currency": "USD" },
+    "mock": { "query": "white t-shirt", "pick": { "size": "L" } }
+  },
+  {
+    "id": "beanie",
+    "instruction": "Add one beanie under $25 to a cart.",
+    "expected": { "quantity": 1, "max_price": 2500, "currency": "USD" },
+    "mock": { "query": "beanie", "pick": {} }
+  },
+  {
+    "id": "hoodie_m_to_l",
+    "instruction": "Add a black hoodie in size M, under $80, to a cart. Then change it to size L.",
+    "expected": { "quantity": 1, "options": { "size": "L", "color": "Black" }, "max_price": 8000, "currency": "USD" },
+    "mock": { "query": "hoodie", "pick": { "size": "M" }, "then": { "size": "L" } }
+  },
+  {
+    "id": "running_shoes",
+    "instruction": "Add one pair of running shoes under $60 to a cart.",
+    "expected": { "quantity": 1, "max_price": 6000, "currency": "USD" },
+    "mock": { "query": "running shoes", "pick": {} }
+  }
+]

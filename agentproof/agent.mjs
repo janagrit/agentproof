@@ -24,13 +24,18 @@ Reply with ONE JSON object, one of:
 {"action":"done","success":true|false,"claim":"one sentence: what you did and the result"}
 `;
 
-async function listElements(page) {
+// Exported so the smoke test can run it on a real page (the mock agent never calls it).
+export async function listElements(page) {
   return page.$$eval("[data-testid]", els =>
     els
       .filter(e => e.offsetParent !== null)
       .map(e => {
         const id = e.dataset.testid;
-        const text = (e.value ?? e.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 60);
+        // Only form fields have a text value. Other elements can have a numeric
+        // .value (e.g. <li>.value is 0), which used to crash .trim().
+        const isField = ["INPUT", "TEXTAREA", "SELECT"].includes(e.tagName);
+        const raw = isField ? e.value : e.textContent;
+        const text = String(raw ?? "").trim().replace(/\s+/g, " ").slice(0, 60);
         return `- ${id}: "${text}"${e.disabled ? " [disabled]" : ""}`;
       })
       .join("\n")

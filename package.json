@@ -11,6 +11,8 @@
     "collect": "node agentproof/collect.mjs",
     "collect:mock": "node agentproof/collect.mjs --mock",
     "eval": "node agentproof/eval.mjs",
+    "shop": "node agentproof/shop-collect.mjs",
+    "shop:mock": "node agentproof/shop-collect.mjs --mock",
     "test": "node --test test/",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",
