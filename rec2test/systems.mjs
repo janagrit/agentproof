@@ -2,7 +2,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { MODELS, uploadVideo, videoPart, imagePart, generate, extractCode } from "./gemini.mjs";
+import { MODELS, uploadVideo, videoPart, imagePart, generate, generateJSON, extractCode } from "../src/gemini.mjs";
 import { BASELINE_PROMPT, PERCEIVE_PROMPT, AUTHOR_PROMPT } from "./prompts.mjs";
 
 export async function baseline(videoPath, dom) {
@@ -19,8 +19,8 @@ function grabFrame(videoPath, t, outPng) {
 export async function pipeline(videoPath, dom, workDir) {
   // Step 1: fast model finds actions + timestamps.
   const f = await uploadVideo(videoPath);
-  const raw = await generate(MODELS.perceive, [videoPart(f), PERCEIVE_PROMPT], { json: true });
-  const { steps } = JSON.parse(raw);
+  const { steps } = await generateJSON(MODELS.perceive, [videoPart(f), PERCEIVE_PROMPT]);
+  if (!Array.isArray(steps)) throw new Error("Perceive model returned no steps array");
 
   // Step 2: grab before/after frames around each action.
   const framesDir = path.join(workDir, "frames");

@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "app": "node app/server.mjs",
     "collect": "node agentproof/collect.mjs",
     "collect:mock": "node agentproof/collect.mjs --mock",
     "eval": "node agentproof/eval.mjs",
-    "sanity": "node src/sanity.mjs"
+    "test": "node --test test/",
+    "smoke": "node scripts/smoke.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "check": "node --test test/ && node scripts/smoke.mjs",
+    "sanity": "node rec2test/sanity.mjs",
+    "rec2test": "node rec2test/eval.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",

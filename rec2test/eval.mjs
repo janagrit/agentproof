@@ -1,40 +1,55 @@
 // Runs every system on every recording, scores each generated test with
-// mutation testing, and writes out/results.md + out/results.json.
+// mutation testing, and writes rec2test/out/<tag>/results.md + results.json.
 //
 // Usage:
-//   node src/eval.mjs                 # all systems, all recordings
-//   node src/eval.mjs --system pipeline --only checkout_misclick
-//   node src/eval.mjs --tag v2        # label this run (keep v1 results for the before/after slide)
+//   node rec2test/eval.mjs                 # all systems, all recordings
+//   node rec2test/eval.mjs --system pipeline --only checkout_misclick
+//   node rec2test/eval.mjs --tag v2        # label this run (keep v1 results for the before/after slide)
 import "dotenv/config";
 import { readdirSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { SYSTEMS } from "./systems.mjs";
 import { scoreSpec, MUTANTS } from "./score.mjs";
+import { parseCli } from "../src/cli.mjs";
+import { rootPath } from "../src/paths.mjs";
+import { requireModels } from "../src/gemini.mjs";
 
-const args = Object.fromEntries(
-  process.argv.slice(2).reduce((acc, a, i, arr) => (a.startsWith("--") ? [...acc, [a.slice(2), arr[i + 1]]] : acc), [])
-);
-const tag = args.tag || "v1";
+const args = parseCli({ flags: ["regen"], options: { tag: "v1", system: undefined, only: undefined } });
+const tag = args.tag;
 const systems = args.system ? [args.system] : Object.keys(SYSTEMS);
-const recordings = readdirSync("rec2test_recordings")
+const unknown = systems.filter(s => !SYSTEMS[s]);
+if (unknown.length) { console.error(`Unknown system(s): ${unknown.join(", ")}. Known: ${Object.keys(SYSTEMS).join(", ")}`); process.exit(1); }
+
+const recDir = rootPath("rec2test", "recordings");
+const recordings = readdirSync(recDir)
   .filter(f => f.endsWith(".mp4"))
   .filter(f => !args.only || f.startsWith(args.only));
+if (!recordings.length) { console.error(`No .mp4 recordings in ${recDir}`); process.exit(1); }
 
-const dom = readFileSync("app/index.html", "utf8").replace(/<script>[\s\S]*<\/script>/, ""); // markup only, no logic
+// Generated specs live under rec2test/ so Playwright's testDir finds them.
+const outDir = rootPath("rec2test", "out", tag);
+const specFor = (sys, rec) => path.join(outDir, sys, rec.replace(/\.mp4$/, ""), "generated.spec.ts");
+const toGenerate = systems.filter(sys => recordings.some(rec => args.regen || !existsSync(specFor(sys, rec))));
+if (toGenerate.length) {
+  try { requireModels(...new Set(toGenerate.flatMap(s => (s === "baseline" ? ["baseline"] : ["perceive", "author"])))); }
+  catch (e) { console.error(e.message); process.exit(1); }
+}
+
+const dom = readFileSync(rootPath("app", "index.html"), "utf8").replace(/<script>[\s\S]*<\/script>/, ""); // markup only, no logic
 const results = [];
 
 for (const sys of systems) {
   for (const rec of recordings) {
     const name = rec.replace(/\.mp4$/, "");
-    const workDir = path.join("out", tag, sys, name);
+    const spec = specFor(sys, rec);
+    const workDir = path.dirname(spec);
     mkdirSync(workDir, { recursive: true });
-    const spec = path.join(workDir, "generated.spec.ts");
     process.stdout.write(`[${sys}] ${name} ... `);
     const t0 = Date.now();
     let row = { system: sys, recording: name };
     try {
       if (!existsSync(spec) || args.regen) {
-        writeFileSync(spec, await SYSTEMS[sys](path.join("rec2test_recordings", rec), dom, workDir));
+        writeFileSync(spec, await SYSTEMS[sys](path.join(recDir, rec), dom, workDir));
       }
       const s = await scoreSpec(spec);
       row = { ...row, ...s, seconds: Math.round((Date.now() - t0) / 1000) };
@@ -66,7 +81,7 @@ for (const m of MUTANTS) {
 lines.push("", "## Per recording", "", "| System | Recording | Valid | Killed |", "|---|---|---|---|");
 for (const r of results) lines.push(`| ${r.system} | ${r.recording} | ${r.valid ? "yes" : "no"} | ${r.killed.length}/${MUTANTS.length} |`);
 
-mkdirSync(path.join("out", tag), { recursive: true });
-writeFileSync(path.join("out", tag, "results.md"), lines.join("\n") + "\n");
-writeFileSync(path.join("out", tag, "results.json"), JSON.stringify(results, null, 2));
+mkdirSync(outDir, { recursive: true });
+writeFileSync(path.join(outDir, "results.md"), lines.join("\n") + "\n");
+writeFileSync(path.join(outDir, "results.json"), JSON.stringify(results, null, 2));
 console.log("\n" + lines.slice(0, 2 + 2 + systems.length).join("\n"));
