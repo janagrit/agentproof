@@ -9,7 +9,11 @@ import path from "node:path";
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(path.join(dir, "index.html"), "utf8");
 
-export function startServer(port, mutant = "", { evidenceDir } = {}) {
+export const MAX_EVIDENCE_BYTES = 200 * 1024 * 1024;
+
+// Starts the store. port 0 picks a free port; read it back with server.port.
+// Rejects if the port cannot be bound (e.g. EADDRINUSE) instead of hanging.
+export function startServer(port, mutant = "", { evidenceDir, maxEvidenceBytes = MAX_EVIDENCE_BYTES } = {}) {
   const page = html.replace(
     "<!--MUTANT-->",
     mutant ? `<script>window.__MUTANT__=${JSON.stringify(mutant)}</script>` : ""
@@ -20,10 +24,25 @@ export function startServer(port, mutant = "", { evidenceDir } = {}) {
     // so they send their screenshots / video / HAR back here).
     // curl --data-binary @shot.png https://<public-url>/__evidence/shot.png
     if (req.method === "POST" && req.url.startsWith("/__evidence/") && evidenceDir) {
-      const name = path.basename(decodeURIComponent(req.url.slice("/__evidence/".length))) || "upload.bin";
+      let name;
+      try { name = path.basename(decodeURIComponent(req.url.slice("/__evidence/".length))); } catch { name = ""; }
+      if (!name || name === "." || name === "..") name = "upload.bin";
       const chunks = [];
-      req.on("data", d => chunks.push(d));
+      let size = 0, tooBig = false;
+      req.on("data", d => {
+        if (tooBig) return;
+        size += d.length;
+        if (size > maxEvidenceBytes) {
+          tooBig = true;
+          chunks.length = 0;
+          res.writeHead(413, { connection: "close" });
+          res.end("evidence too large");
+          return;
+        }
+        chunks.push(d);
+      });
       req.on("end", () => {
+        if (tooBig) return;
         mkdirSync(evidenceDir, { recursive: true });
         writeFileSync(path.join(evidenceDir, name), Buffer.concat(chunks));
         res.writeHead(201); res.end("saved " + name);
@@ -48,11 +67,18 @@ export function startServer(port, mutant = "", { evidenceDir } = {}) {
     res.end(page);
   });
   server.orders = orders;
-  return new Promise(resolve => server.listen(port, () => resolve(server)));
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, () => {
+      server.off("error", reject);
+      server.port = server.address().port;
+      resolve(server);
+    });
+  });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 4000);
-  await startServer(port, process.env.MUTANT || "");
-  console.log(`Tiny Shop on http://localhost:${port}  mutant=${process.env.MUTANT || "none"}`);
+  const server = await startServer(port, process.env.MUTANT || "");
+  console.log(`Tiny Shop on http://localhost:${server.port}  mutant=${process.env.MUTANT || "none"}`);
 }

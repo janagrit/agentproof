@@ -1,7 +1,7 @@
 // The agent being checked: a simple Gemini browser agent.
 // Each step: screenshot + list of clickable elements -> model picks one action.
 // At the end it reports {success, claim}. AgentProof's job is to check that claim.
-import { generate, imagePart, MODELS } from "../src/gemini.mjs";
+import { generate, imagePart, MODELS, parseModelJSON } from "../src/gemini.mjs";
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -52,7 +52,7 @@ export async function runGeminiAgent(page, task, runDir) {
     await page.screenshot({ path: shot });
     const raw = await generate(MODELS.agent, [AGENT_PROMPT(task.instruction, await listElements(page), history), imagePart(shot)], { json: true });
     let a;
-    try { a = JSON.parse(raw); } catch { history.push(`(invalid reply: ${raw.slice(0, 80)})`); continue; }
+    try { a = parseModelJSON(raw); } catch { history.push(`(invalid reply: ${raw.slice(0, 80)})`); continue; }
     if (a.action === "done") return { success: !!a.success, claim: a.claim || "", steps: history };
     if (a.action === "wait") { await page.waitForTimeout(1500); history.push("waited"); continue; }
     try {

@@ -14,26 +14,36 @@
 // the official skill in your coding agent:
 //   npx skills add google-gemini/gemini-skills --skill gemini-interactions-api
 import "dotenv/config";
-import { readFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { startServer } from "../app/server.mjs";
 import { judgeTruth } from "./truth.mjs";
 import { saveJSON } from "./agent.mjs";
+import { loadTasks, loadMutants } from "./tasks.mjs";
+import { parseClaim, harToNetwork } from "./managed-lib.mjs";
+import { parseCli, list } from "../src/cli.mjs";
+import { rootPath, userPath } from "../src/paths.mjs";
+import { hasFfmpeg, toMp4 } from "../src/media.mjs";
+import { withRetry } from "../src/gemini.mjs";
 
-const argv = process.argv.slice(2);
-const opt = k => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : undefined; };
+const args = parseCli({ flags: ["redo"], options: { out: undefined, tasks: undefined, mutants: undefined } });
 const PUBLIC_URL = process.env.PUBLIC_URL;
-const PORT = Number(process.env.PORT || 4000);
+const PORT = Number(process.env.PORT || 4000); // fixed: the tunnel points here
 const AGENT = process.env.MANAGED_AGENT || "antigravity-preview-09-2026";
 const API = "https://generativelanguage.googleapis.com/v1beta/interactions";
 const KEY = process.env.GEMINI_API_KEY;
-if (!PUBLIC_URL || !KEY) { console.error("Set PUBLIC_URL (tunnel) and GEMINI_API_KEY"); process.exit(1); }
+const outRoot = args.out ? userPath(args.out) : rootPath("runs_managed");
 
-const TASKS = JSON.parse(readFileSync("agentproof/tasks.json", "utf8"))
-  .filter(t => !opt("tasks") || opt("tasks").split(",").includes(t.id));
-const MUTANTS = (opt("mutants") || "none,discount_not_applied,wrong_item_added,order_silently_fails").split(",");
-const outRoot = opt("out") || "runs_managed";
+let TASKS, MUTANTS;
+try {
+  if (!PUBLIC_URL || !KEY) throw new Error("Set PUBLIC_URL (tunnel) and GEMINI_API_KEY");
+  if (!hasFfmpeg()) throw new Error("ffmpeg not found on PATH. macOS: brew install ffmpeg");
+  TASKS = loadTasks(list(args.tasks));
+  MUTANTS = loadMutants(list(args.mutants), ["none", "discount_not_applied", "wrong_item_added", "order_silently_fails"]);
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
+}
 
 const PROMPT = (task, url) => `
 You are a shopping agent. Use a real headless browser (install Playwright for
@@ -57,42 +67,34 @@ Requirements:
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+async function fetchJSON(url, init) {
+  const res = await fetch(url, init);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const e = new Error(`Interactions API ${res.status}: ${JSON.stringify(body).slice(0, 400)}`);
+    e.status = res.status;
+    throw e;
+  }
+  return body;
+}
+
 async function callAgent(input) {
   const headers = { "content-type": "application/json", "x-goog-api-key": KEY };
-  let res = await fetch(API, { method: "POST", headers, body: JSON.stringify({ agent: AGENT, environment: "remote", input }) });
-  let it = await res.json();
-  if (!res.ok) throw new Error(`Interactions API ${res.status}: ${JSON.stringify(it).slice(0, 400)}`);
+  let it = await withRetry(() => fetchJSON(API, { method: "POST", headers, body: JSON.stringify({ agent: AGENT, environment: "remote", input }) }), { label: "interactions create" });
   // If the call returns before the agent is done, poll until it finishes.
   const id = it.id || it.name;
   for (let i = 0; i < 180 && id && it.status && !/complete|done|succeed|fail|cancel/i.test(it.status); i++) {
     await sleep(5000);
-    it = await (await fetch(`${API}/${encodeURIComponent(id)}`, { headers })).json();
+    it = await withRetry(() => fetchJSON(`${API}/${encodeURIComponent(id)}`, { headers }), { label: "interactions poll" });
   }
   return it;
-}
-
-function parseClaim(text = "") {
-  const lines = text.trim().split("\n").reverse();
-  for (const l of lines) {
-    const m = l.match(/\{.*"success".*\}/);
-    if (m) { try { const j = JSON.parse(m[0]); return { success: !!j.success, claim: j.claim || "" }; } catch {} }
-  }
-  return { success: false, claim: `(no JSON claim) ${text.slice(-200)}` };
-}
-
-// Pull a simple network list out of the HAR, same shape as collect.mjs.
-function harToNetwork(harPath) {
-  try {
-    const har = JSON.parse(readFileSync(harPath, "utf8"));
-    return har.log.entries.map(e => ({ method: e.request.method, url: e.request.url.replace(/^https?:\/\/[^/]+/, ""), status: e.response.status }));
-  } catch { return null; }
 }
 
 for (const task of TASKS) {
   for (const mutant of MUTANTS) {
     const id = `${task.id}__${mutant}`;
     const runDir = path.join(outRoot, id);
-    if (existsSync(path.join(runDir, "run.json")) && !argv.includes("--redo")) { console.log(`skip ${id}`); continue; }
+    if (existsSync(path.join(runDir, "run.json")) && !args.redo) { console.log(`skip ${id}`); continue; }
     mkdirSync(runDir, { recursive: true });
 
     const server = await startServer(PORT, mutant === "none" ? "" : mutant, { evidenceDir: runDir });
@@ -103,15 +105,18 @@ for (const task of TASKS) {
       agent = { ...parseClaim(raw.output_text || raw.outputText || ""), steps: raw.steps ?? null };
     } catch (e) {
       agent = { success: false, claim: `Agent call failed: ${e.message}`, steps: null };
+    } finally {
+      await sleep(3000); // let late uploads land
+      server.close();
     }
-    await sleep(3000); // let late uploads land
-    server.close();
 
     // Normalise evidence to what the verifiers expect: video.mp4 + final.png
     const files = readdirSync(runDir);
     const vid = files.find(f => /\.(webm|mp4)$/.test(f) && f !== "video.mp4");
-    if (vid) execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", path.join(runDir, vid),
-      "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", path.join(runDir, "video.mp4")]);
+    if (vid) {
+      try { toMp4(path.join(runDir, vid), path.join(runDir, "video.mp4")); }
+      catch (e) { console.warn(`  could not convert ${vid}: ${e.message.split("\n")[0]}`); }
+    }
     const network = harToNetwork(path.join(runDir, "session.har"));
 
     const truth = judgeTruth(task, server.orders);
