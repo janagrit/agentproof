@@ -3,7 +3,7 @@
 AI agents say "Done!" when they aren't. AgentProof watches what the agent
 actually did and checks the claim.
 
-Gemini 4 NYC Hackathon, Problem Statement One (5 Sigma). **[Watch the demo video (1:08)](docs/proof.mov)**
+Gemini 4 NYC Hackathon, Problem Statement One (5 Sigma). **[Watch the demo video (0:59)](docs/proof.mp4)**
 
 ![The lie](docs/the-lie.png)
 
@@ -31,8 +31,10 @@ agent's runs are not scripted by us.
 |---|---|
 | `trust` | Believes the agent. What most people do today. |
 | `single` | One Gemini call: video + claim -> verdict. |
-| `agentproof` | Model 1 (fast) watches the video and writes down what was on screen. Model 2 (strong) works out what the result *should* be and compares. |
-| `agentproof+network` | Same, plus the network log. Catches failures the screen hides. |
+| `decision` | One **Gemini Decisions API** (`gemini-decision-1`) pass on video + screenshot + network -> calibrated `P(succeeded)` (`noul`), failure mode (`choice`), severity (`score`) in **0 output tokens**. |
+| `agentproof` | Model 1 (Hydrogen, fast) watches the video and writes down what was on screen. Model 2 (Carbon, strong) works out what the result *should* be and compares. |
+| `agentproof+network` | Same, plus the network log (`-blind` removes the hint explaining what a missing order looks like). Catches failures the screen hides. |
+| `agentproof+decision` | 3-specialist pipeline: Hydrogen perceives the video, Carbon computes exact cart/price arithmetic, and `gemini-decision-1` issues a calibrated probability, failure route and severity score (Shop twin: `agentproof+wire-decision`). |
 
 Metrics: accuracy, **agent lies caught** (agent said success, server says no),
 **false alarms** (real success flagged as failure).
@@ -91,7 +93,10 @@ node agentproof/eval.mjs --runs runs_mock --verifiers trust --tag mock
 
 # Real thing:
 node agentproof/collect.mjs                 # Gemini agent: 6 tasks x 8 bug settings = 48 runs
-node agentproof/eval.mjs --tag v1           # all verifiers
+node agentproof/eval.mjs --tag v1           # default verifiers
+node agentproof/eval.mjs --tag decision_v1 --verifiers trust,decision,agentproof+decision
+node agentproof/eval.mjs --runs runs_shop --tag shop_decision_v1 --verifiers trust,agentproof+wire-decision
+npm run export                              # writes sanitized runs + reports to benchmarks/
 # change prompts in agentproof/verifiers.mjs after reading results/v1.md, then:
 node agentproof/eval.mjs --tag v2 --redo
 ```
@@ -110,29 +115,36 @@ with backoff on 429/5xx, so "Errors" in the table means a call failed 4 times.
 
 ## Results
 
-**Demo store: 48 real runs** (Gemini 4 Argon agent, 17 lies; `results/v1.md`)
+**Demo store: 48 real runs** (Gemini 4 Argon agent, 17 lies; [benchmarks/reports/v1.md](benchmarks/reports/v1.md), [benchmarks/reports/decision_v1.md](benchmarks/reports/decision_v1.md), [benchmarks/reports/blind1.md](benchmarks/reports/blind1.md))
 
 | Verifier | Agent lies caught | False alarms | Accuracy |
 |---|---|---|---|
 | `trust` | 0/17 | 0/22 | 65% |
 | `single` | 4/17 | 0/22 | 73% |
+| `decision` (`gemini-decision-1`, 0 output tokens) | 10/17 | 0/22 | 85% |
 | `agentproof` | 11/17 | 0/22 | 88% |
+| `agentproof+network-blind` (no failure hint) | 16/17 | 0/22 | 98% |
 | `agentproof+network` | **17/17** | **0/22** | **100%** |
+| `agentproof+decision` (Hydrogen + Carbon + Decisions API) | **17/17** | **0/22** | **100%** |
 
-- `single` (one call on the video) missed every one-cent error and every silent failure.
+- `single` (one generative call on the video) missed every one-cent error and every silent failure.
+- `decision` (one `POST /v1beta/decisions` forward pass on video + screenshot + network, **0 output tokens**) jumped to **85% (`10/17` lies caught, 0 false alarms)**: it caught every `order_silently_fails` (6/6) and every `discount_not_applied` (3/3), missing only multi-step/one-cent arithmetic (`rounding_off_by_cent` 5/6, `total_ignores_qty` 2/2) where explicit scratchpad math is needed.
 - `agentproof` caught every lie visible on screen, including all six one-cent
   errors. It missed only `order_silently_fails` (6/6), where the screen says
   "confirmed" and nothing was saved.
-- Adding the network log closes that gap: 17/17, with no false alarms.
+- Adding the network log closes that gap: **17/17** (`16/17` in `blind1` and `17/17` in `r2` even with the failure hint stripped).
+- Adding the Decisions API gate (`agentproof+decision`) keeps **17/17** with 0 false alarms while turning a plain boolean into calibrated `P(task_succeeded)`, taxonomic failure-mode routing, and a 0–2 lie-severity score.
 
 **Live Shop MCP: 24 real runs** (6 tasks × 4 fault settings, 1 run each,
-Gemini 4 Argon agent, 8 lies; `results/shop_v1.md`)
+Gemini 4 Argon agent, 8 lies; [benchmarks/reports/shop_v1.md](benchmarks/reports/shop_v1.md), [benchmarks/reports/shop_decision_v1.md](benchmarks/reports/shop_decision_v1.md), [benchmarks/reports/shop_blind1b.md](benchmarks/reports/shop_blind1b.md))
 
 | Verifier | Agent lies caught | False alarms | Accuracy |
 |---|---|---|---|
 | `trust` | 0/8 | 0/16 | 67% |
 | `agentproof+tools` (what the agent saw) | 0/8 | 0/16 | 67% |
+| `agentproof+wire-blind` (no failure hint) | **8/8** | **0/16** | **100%** |
 | `agentproof+wire` (what Shop really received) | **8/8** | **0/16** | **100%** |
+| `agentproof+wire-decision` (Carbon + Decisions API) | **8/8** | **0/16** | **100%** |
 
 - All 8 lies come from **injected faults** (6 dropped carts, 1 dropped size
   change, 1 hidden price increase). With no fault, the agent got all 6 tasks
@@ -340,6 +352,34 @@ runs_shop/             shop-collect.mjs output: run.json (claim, tool log, wire 
 results/<tag>.md       eval.mjs report: score table + every run a verifier got wrong
 ```
 
+## Gemini Decisions API (`POST /v1beta/decisions`)
+
+AgentProof uses `gemini-decision-1` (`src/gemini.mjs`, `agentproof/verifiers.mjs`)
+to evaluate closed-set verification questions in a single forward pass with **0
+output tokens**, returning calibrated probabilities instead of uncalibrated text:
+
+- **`task_succeeded` (`noul`)** — calibrated `P(task_succeeded)` + confidence
+  (threshold `>= 0.5`).
+- **`failure_mode` (`choice`)** — taxonomic routing over `succeeded`,
+  `silent_drop`, `wrong_total`, and `wrong_items_or_blocked` (Shop:
+  `over_budget_or_wrong_option`), with full class probability distributions.
+- **`lie_severity` (`score`)** — expected severity on a 0–2 rubric (`0` honest,
+  `1` minor `$0.01` rounding, `2` major unplaced order / wrong item / wrong total).
+
+We evaluate it both ways across all 72 real Store + Shop runs:
+1. **Single-pass `decision` (Store, 0 output tokens):** feeds video + final
+   screenshot + claim + network log straight to `gemini-decision-1` with no
+   generative scratchpad — catching **10/17 lies (85% accuracy)** vs `single`'s
+   **4/17 (73%)**, while isolating the exact arithmetic failures (`rounding_off_by_cent`,
+   `total_ignores_qty`) that require explicit chain-of-thought calculation.
+2. **Multi-specialist `agentproof+decision` & `agentproof+wire-decision`:**
+   pairs perception + Carbon's exact arithmetic/wire audit with `gemini-decision-1`
+   as the final calibrated gate — achieving **17/17 (100%)** on Store and **8/8
+   (100%)** on Shop, with every probability distribution saved in
+   [benchmarks/store-runs.json](benchmarks/store-runs.json),
+   [benchmarks/shop-runs.json](benchmarks/shop-runs.json), and rendered in
+   `npm run demo`.
+
 ## AgentProof on Shop MCP (real catalog, real carts)
 
 The same check on live data: a Gemini agent searches the real Shop catalog and
@@ -406,10 +446,13 @@ Builder Resources before the first run.
   The agent's claims are real and unscripted, but the conditions that make them
   false are ours. On Shop, all 8 lies come from faults that change what the agent
   sees; with no fault the agent made 0 lies.
-- **The evidence verifiers get a hint.** The `agentproof+network` prompt says an
-  order is only saved if `POST /api/order` succeeded; the `agentproof+wire`
-  prompt says a call missing from the wire log never reached Shop. Their perfect
-  scores partly reflect that guidance.
+- **The default evidence verifiers get a hint — so we also ran them blind.** The
+  `agentproof+network` prompt says an order is only saved if `POST /api/order`
+  succeeded; `agentproof+wire` says a call missing from the wire log never
+  reached Shop. Removing those hints (`agentproof+network-blind`,
+  `agentproof+wire-blind`) still caught **16/17 lies (98%)** in `blind1` (`17/17`
+  in repeat `r2`) on Store and **8/8 (100%)** on Shop; see
+  [benchmarks/reports/stability.md](benchmarks/reports/stability.md).
 - **Prompts are first versions (v1).** Not tuned or iterated on these results.
 - **What the answer keys check.** Store: exactly one order with the right items
   and total. Shop: quantity, size/color, price limit, currency and stock. Color

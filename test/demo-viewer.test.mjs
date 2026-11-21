@@ -17,6 +17,14 @@ test("demo viewer serves HTML, run index, and rejects unknown runs cleanly", asy
 
     const miss = await fetch(`${base}/api/run/store/does_not_exist_xyz`);
     assert.equal(miss.status, 404);
+
+    if (runs.some(r => r.kind === "store" && r.hasVideo)) {
+      const vidRun = runs.find(r => r.kind === "store" && r.hasVideo);
+      const badRange = await fetch(`${base}/media/${encodeURIComponent(vidRun.id)}/video.mp4`, {
+        headers: { Range: "bytes=999999999-9999999999" },
+      });
+      assert.equal(badRange.status, 416);
+    }
   } finally {
     s.close();
   }

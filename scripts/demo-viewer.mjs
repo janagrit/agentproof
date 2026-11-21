@@ -27,13 +27,15 @@ function readVerdicts(runDir) {
     const m = f.match(/^verdict\.(.+)\.([^.]+)\.json$/);
     if (!m) continue;
     const [, verifier, tag] = m;
-    // Prefer primary tags (v1, shop_v1, decision_v1, shop_decision_v1, blind1) over repeat tags.
-    const priority = /^(v1|shop_v1|decision_v1|shop_decision_v1|blind1|shop_blind1)$/.test(tag);
-    if (!out[verifier] || priority) {
-      try {
-        out[verifier] = { ...redact(JSON.parse(readFileSync(path.join(runDir, f), "utf8"))), tag };
-      } catch {}
-    }
+    // Prefer primary tags over repeat tags, and never overwrite a valid verdict with a null error.
+    const priority = /^(v1|shop_v1|decision_v1|shop_decision_v1|blind1|shop_blind1b|shop_blind1)$/.test(tag);
+    try {
+      const parsed = { ...redact(JSON.parse(readFileSync(path.join(runDir, f), "utf8"))), tag };
+      const cur = out[verifier];
+      if (!cur || (cur.task_succeeded === null && parsed.task_succeeded !== null) || (priority && !(parsed.task_succeeded === null && cur.task_succeeded !== null))) {
+        out[verifier] = parsed;
+      }
+    } catch {}
   }
   return out;
 }
@@ -87,10 +89,16 @@ function serveMedia(req, res, filePath, mime) {
   if (!existsSync(filePath)) { res.writeHead(404); res.end("Not found"); return; }
   const stat = statSync(filePath);
   const range = req.headers.range;
-  if (range && mime === "video/mp4") {
+  if (range && mime === "video/mp4" && stat.size > 0) {
     const [s, e] = range.replace(/bytes=/, "").split("-");
     const start = Number.parseInt(s, 10) || 0;
-    const end = e ? Number.parseInt(e, 10) : stat.size - 1;
+    const rawEnd = e ? Number.parseInt(e, 10) : stat.size - 1;
+    const end = Number.isFinite(rawEnd) ? Math.min(rawEnd, stat.size - 1) : stat.size - 1;
+    if (start < 0 || start >= stat.size || end < start) {
+      res.writeHead(416, { "Content-Range": `bytes */${stat.size}` });
+      res.end();
+      return;
+    }
     res.writeHead(206, {
       "Content-Range": `bytes ${start}-${end}/${stat.size}`,
       "Accept-Ranges": "bytes",
@@ -173,10 +181,11 @@ const HTML = `<!doctype html>
   <div class="scorebar">
     <span class="pill">trust: <strong>0/17 lies</strong></span>
     <span class="pill">single (1 call): <strong>4/17</strong></span>
+    <span class="pill">decision (0 out tok): <strong>10/17 (85%)</strong></span>
     <span class="pill">agentproof (H+C): <strong>11/17</strong></span>
     <span class="pill">blind (+net, no hint): <strong>16/17 (98%)</strong></span>
     <span class="pill win">agentproof+network / +decision: <strong>17/17 lies · 0 false alarms</strong></span>
-    <span class="pill win">Shop MCP +wire: <strong>8/8 lies · 100%</strong></span>
+    <span class="pill win">Shop MCP +wire / +decision: <strong>8/8 lies · 100%</strong></span>
   </div>
 </header>
 <div class="featured">

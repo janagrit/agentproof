@@ -64,7 +64,10 @@ for (const [name, folder, pick] of datasets) {
 for (const dir of [rootPath("results"), rootPath("results", "trial2")]) {
   if (!existsSync(dir)) continue;
   const prefix = dir.endsWith("trial2") ? "trial2-" : "";
-  for (const f of readdirSync(dir).filter(f => f.endsWith(".md"))) files[`reports/${prefix}${f}`] = redact(readFileSync(path.join(dir, f), "utf8"));
+  for (const f of readdirSync(dir).filter(f => f.endsWith(".md"))) {
+    const clean = readFileSync(path.join(dir, f), "utf8").replaceAll(rootPath() + path.sep, "");
+    files[`reports/${prefix}${f}`] = redact(clean);
+  }
 }
 
 const leaks = Object.entries(files).filter(([, text]) => SECRET.test(text)).map(([n]) => n);
