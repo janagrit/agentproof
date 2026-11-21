@@ -1,16 +1,13 @@
-// Exports sanitized, committable benchmark data to benchmarks/ so others can
-// check the README numbers without the raw local evidence.
+// Exports sanitized, committable benchmark data to benchmarks/ and static
+// viewer data to docs/demo-data.json so others can inspect all runs on GitHub
+// and https://janagrit.github.io/agentproof/ without local run folders.
 //   node scripts/export-benchmarks.mjs
-// Reads (never modifies) runs/, runs_shop/, runs_trial2/ and results/.
-// Every value goes through redact(); the export is refused if anything
-// key- or token-shaped survives. Videos and screenshots stay local.
 import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { rootPath } from "../src/paths.mjs";
 import { redact } from "../src/shop-mcp.mjs";
 
 const OUT = rootPath("benchmarks");
-// Anything that looks like a credential or a live cart/line token.
 export const SECRET = /AIza[0-9A-Za-z_-]{30,}|AQ\.[A-Za-z0-9_.-]{30,}|[?&](?:key|cart)=(?!\[REDACTED\])[^&"\s|)]+|GEMINI_API_KEY=[^\s"]{8,}|Bearer [A-Za-z0-9._-]{20,}|continue_url"\s*:\s*"http/;
 
 function verdicts(dir) {
@@ -26,7 +23,42 @@ function verdicts(dir) {
       ...(v.decision ? { decision: v.decision } : {}),
     };
   }
-  return out; // { tag: { verifier: {...} } }
+  return out;
+}
+
+function primaryVerdicts(dir) {
+  const out = {};
+  if (!existsSync(dir)) return out;
+  for (const f of readdirSync(dir).sort()) {
+    const m = f.match(/^verdict\.(.+)\.([^.]+)\.json$/);
+    if (!m) continue;
+    const [, verifier, tag] = m;
+    const priority = /^(v1|shop_v1|decision_v1|shop_decision_v1|blind1|shop_blind1b|shop_blind1)$/.test(tag);
+    try {
+      const raw = JSON.parse(readFileSync(path.join(dir, f), "utf8"));
+      const cur = out[verifier];
+      if (!cur || (cur.task_succeeded === null && raw.task_succeeded !== null) || (priority && !(raw.task_succeeded === null && cur.task_succeeded !== null))) {
+        out[verifier] = {
+          task_succeeded: raw.task_succeeded,
+          evidence: raw.evidence ?? "",
+          tag,
+          meta: { models: raw.meta?.models ?? null },
+          ...(raw.decision ? { decision: raw.decision } : {}),
+          ...(raw.usage ? { usage: raw.usage } : {}),
+          ...(raw.timeline?.events ? { timeline: { events: raw.timeline.events } } : {}),
+        };
+      }
+    } catch {}
+  }
+  // Keep timeline on a single verifier per run so demo-data.json stays compact.
+  let keptTimeline = false;
+  for (const k of ["agentproof+decision", "agentproof+network", "agentproof"]) {
+    if (out[k]?.timeline) {
+      if (keptTimeline) delete out[k].timeline;
+      else keptTimeline = true;
+    }
+  }
+  return out;
 }
 
 function exportRuns(folder, pick) {
@@ -37,6 +69,31 @@ function exportRuns(folder, pick) {
     .map(d => {
       const r = JSON.parse(readFileSync(path.join(dir, d, "run.json"), "utf8"));
       return { ...pick(r), verdicts: verdicts(path.join(dir, d)) };
+    });
+}
+
+function exportViewerRuns(folder, kind) {
+  const dir = rootPath(folder);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).sort()
+    .filter(d => existsSync(path.join(dir, d, "run.json")))
+    .map(d => {
+      const runDir = path.join(dir, d);
+      const r = JSON.parse(readFileSync(path.join(runDir, "run.json"), "utf8"));
+      return redact({
+        kind,
+        id: r.id,
+        task: r.task,
+        mutant: r.mutant ?? r.fault ?? "none",
+        instruction: r.instruction,
+        agentModel: r.agentModel ?? null,
+        seconds: r.seconds,
+        hasVideo: kind === "store" && existsSync(path.join(runDir, "video.mp4")),
+        agent: { success: Boolean(r.agent?.success), claim: r.agent?.claim ?? "" },
+        truth: r.truth,
+        ...(kind === "shop" ? { tools: r.tools, wire: r.wire } : { network: r.network }),
+        verdicts: primaryVerdicts(runDir),
+      });
     });
 }
 
@@ -70,12 +127,23 @@ for (const dir of [rootPath("results"), rootPath("results", "trial2")]) {
   }
 }
 
-const leaks = Object.entries(files).filter(([, text]) => SECRET.test(text)).map(([n]) => n);
+const demoRuns = [...exportViewerRuns("runs", "store"), ...exportViewerRuns("runs_shop", "shop")];
+const demoText = JSON.stringify({ runs: demoRuns }) + "\n";
+
+const leaks = [
+  ...Object.entries(files).filter(([, text]) => SECRET.test(text)).map(([n]) => n),
+  ...(SECRET.test(demoText) ? ["docs/demo-data.json"] : []),
+];
 if (leaks.length) {
   console.error(`REFUSED: secret-shaped text found in ${leaks.join(", ")}. Nothing written.`);
   process.exit(1);
 }
 mkdirSync(path.join(OUT, "reports"), { recursive: true });
 for (const [name, text] of Object.entries(files)) writeFileSync(path.join(OUT, name), text);
-console.log(`Wrote ${Object.keys(files).length} files to benchmarks/ (0 secret-shaped strings):`);
+if (demoRuns.length) {
+  mkdirSync(rootPath("docs"), { recursive: true });
+  writeFileSync(rootPath("docs", "demo-data.json"), demoText);
+}
+console.log(`Wrote ${Object.keys(files).length} files to benchmarks/ + docs/demo-data.json (0 secret-shaped strings):`);
 for (const [name, text] of Object.entries(files)) console.log(`  ${name.padEnd(34)} ${(text.length / 1024).toFixed(0)} KB`);
+if (demoRuns.length) console.log(`  ${"docs/demo-data.json".padEnd(34)} ${(demoText.length / 1024).toFixed(0)} KB`);

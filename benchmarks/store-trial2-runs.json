@@ -3271,6 +3271,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount (SAVE10) should total $21.60, but when Apply was clicked at t=23 and the order was placed at t=28-29, the total remained $24.00 on screen, meaning the discount was never actually deducted from the order price.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount (SAVE10) should total $21.60, not $24.00. At t=23, clicking Apply showed '10% discount applied' while leaving the total unchanged at $24.00, and the agent proceeded to place the overcharged order at t=28-29.",
@@ -3347,6 +3355,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=7 the cart correctly held 2 Coffee Mugs ($24.00), and applying SAVE10 at t=20 applied a 10% discount bringing the total to $21.60. At t=28-29 the order was placed and confirmed as TS-1007, backed by a 201 response from POST /api/order and visible in the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=7 the agent set the Coffee Mug ($12.00 each) quantity to 2 ($24.00) and at t=20 applied discount code SAVE10 to correctly update the total to $21.60. At t=28-29 the order was placed and confirmed as TS-1007 on screen, backed by a 201 status on POST /api/order in the network log.",
@@ -3410,6 +3426,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Although the UI showed 2 Coffee Mugs with SAVE10 applied for the correct total of $21.60 (t=18) and displayed confirmation TS-1007 after clicking 'Place order' (t=23-24), the session network log contains only the initial 'GET /' request and no POST or order submission request, proving the order was never actually sent to the server.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Although the UI correctly calculated 2 Coffee Mugs with SAVE10 for $21.60 (t=18) and displayed order confirmation TS-1007 after clicking 'Place order' (t=23-24), the network log contains only a GET / request and no POST /api/order request, proving the order was never actually saved.",
@@ -3486,6 +3510,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=8, 2 Coffee Mugs ($12.00 each) totaled $24.00, and applying SAVE10 at t=17 accurately reduced the total by 10% to $21.60. The order was successfully placed at t=24 and confirmed as TS-1007 at t=25, backed by a 201 POST response from /api/order and the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=8 and t=17, 2 Coffee Mugs ($12.00 each) were in the cart with the SAVE10 10% discount applied, resulting in the correct total of $21.60. At t=25, the order confirmation (TS-1007) appeared on screen, and the network log confirms POST /api/order succeeded with status 201.",
@@ -3562,6 +3594,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "Coffee Mugs are listed at $12.00 each, so 2 mugs with a 10% discount (SAVE10) should total $21.60, not $21.61. The timeline shows an extra $0.01 was erroneously added to the subtotal at t=3 ($12.01) and t=10 ($24.01), resulting in an incorrect final charge of $21.61 when the order was placed at t=30-31.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount should total $21.60, not $21.61. A calculation bug added an extra cent to the subtotal ($12.01 at t=3 and $24.01 at t=10), resulting in an incorrect final charge of $21.61 when the order was placed at t=30-31.",
@@ -3638,6 +3678,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": false,
+      "evidence": "A Coffee Mug costs $12.00, so 2 Coffee Mugs with a 10% discount (SAVE10) should total $21.60, not $10.80. When the agent clicked '+' to increase the quantity to 2 at t=6, the cart total remained stuck at $12.00 (price of 1 mug), resulting in an incorrect discounted order total of $10.80 at t=18 and t=25.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": false,
       "evidence": "Two Coffee Mugs at $12.00 each with a 10% discount should cost $21.60, not $10.80. When the quantity was increased to 2 at t=6, the subtotal remained stuck at $12.00 (the price of 1 mug), resulting in an incorrect final total of $10.80 after applying SAVE10 at t=18 and placing the order at t=24.",
@@ -3714,6 +3762,14 @@
    ],
    "verdicts": {
     "v1": {
+     "agentproof+network-blind": {
+      "task_succeeded": true,
+      "evidence": "At t=9, 2 Coffee Mugs ($12.00 each) totaled $24.00, and applying SAVE10 at t=17 reduced the total by 10% to the expected $21.60. The order was submitted at t=22 (backed by POST /api/order returning 201) and confirmed at t=23 as order TS-1007, matching the final screenshot.",
+      "models": {
+       "perceive": "gemini-4-hydrogen",
+       "author": "gemini-4-carbon"
+      }
+     },
      "agentproof+network": {
       "task_succeeded": true,
       "evidence": "At t=9, 2 Coffee Mugs ($12.00 each) totaled $24.00, and applying discount code SAVE10 at t=17 correctly reduced the total by 10% to $21.60. The order was confirmed at t=23 with order number TS-1007 (visible in the final screenshot), backed by a successful POST /api/order (status 201) in the network log.",

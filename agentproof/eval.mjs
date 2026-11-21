@@ -59,7 +59,7 @@ const show = p => (p.startsWith(rootPath() + path.sep) ? path.relative(rootPath(
 const agentCounts = new Map();
 for (const id of runIds) {
   const r = JSON.parse(readFileSync(path.join(runsDir, id, "run.json"), "utf8"));
-  const m = r.agentModel ?? (r.managed ? `managed: ${r.managed}` : r.mock ? "mock" : "unknown");
+  const m = r.agentModel ?? (r.mock ? "mock" : "unknown");
   agentCounts.set(m, (agentCounts.get(m) ?? 0) + 1);
 }
 const agentLine = [...agentCounts].map(([m, n]) => `${m} (${n} run${n === 1 ? "" : "s"})`).join(", ");

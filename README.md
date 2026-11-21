@@ -3,7 +3,7 @@
 AI agents say "Done!" when they aren't. AgentProof watches what the agent
 actually did and checks the claim.
 
-Gemini 4 NYC Hackathon, Problem Statement One (5 Sigma). **[Watch the demo video (0:59)](docs/proof.mp4)**
+Gemini 4 NYC Hackathon, Problem Statement One (5 Sigma). **[Open Live Browser Viewer](https://janagrit.github.io/agentproof/)** · **[Watch the demo video (0:59)](docs/proof.mp4)**
 
 ![The lie](docs/the-lie.png)
 
@@ -38,6 +38,13 @@ agent's runs are not scripted by us.
 
 Metrics: accuracy, **agent lies caught** (agent said success, server says no),
 **false alarms** (real success flagged as failure).
+
+**Gemini 4 Periodic Table roles:** **`gemini-4-argon`** runs as the browser and
+Shop MCP shopping agent; **`gemini-4-hydrogen`** handles fast video perception
+(timestamps + screen state); **`gemini-4-carbon`** performs exact arithmetic and
+network/wire auditing; **`gemini-decision-1`** (`POST /v1beta/decisions`)
+produces calibrated probabilities, failure routing and severity scores in 0
+output tokens.
 
 ## Setup
 
@@ -318,8 +325,6 @@ agentproof/            the product: run agents, check claims, score the checkers
   shop-collect.mjs     runs Shop tasks x faults, writes runs_shop/
   shop-view.mjs        short text summaries of Shop replies (what is stored and judged)
   shop-mock.mjs        fake Shop for tests and mock mode
-  managed.mjs          same as collect, with a Gemini Managed Agent (not yet run)
-  managed-lib.mjs      parses the managed agent's claim and HAR network log
 src/                   shared code
   gemini.mjs           Gemini SDK wrapper: retries, JSON parsing, model IDs from .env
   shop-mcp.mjs         Shop MCP client: protocol, retries, redaction of key-bearing ids
@@ -335,7 +340,7 @@ scripts/
   smoke.mjs            end-to-end mock run
   effort-chart.mjs     builds the agent-effort charts in docs/ from runs/
 benchmarks/            redacted, committable run logs, verdicts and markdown reports
-docs/                  images and demo clip for this README
+docs/                  GitHub Pages live viewer (index.html, demo-data.json, videos/) + README assets
 ```
 
 Generated when you run things (git-ignored):
@@ -346,7 +351,6 @@ runs/                  collect.mjs output, one folder per task x bug:
                          run.json (agentModel, claim, truth, network, orders),
                          verdict.<verifier>.<tag>.json (cached verdicts)
 runs_mock/             same, from --mock (plumbing only, never report these)
-runs_managed/          same, from managed.mjs (+ session.har, interaction.json)
 runs_shop/             shop-collect.mjs output: run.json (claim, tool log, wire log,
                        real cart; key-bearing ids redacted) + verdicts
 results/<tag>.md       eval.mjs report: score table + every run a verifier got wrong
@@ -414,34 +418,13 @@ node agentproof/eval.mjs --runs runs_shop --tag shop_v1
 Each live run creates real anonymous carts at real stores (no orders, no
 money; carts expire after 30 days).
 
-## Gemini Managed Agent (Best Managed Agents award)
-
-**Status: not yet run.** The code exists but has never been run against the
-live Interactions API, so no results come from it.
-
-The agent being checked can be a Gemini Managed Agent instead of the simple loop.
-It runs in Google's cloud, so expose the store with a tunnel:
-
-```bash
-npx cloudflared tunnel --url http://localhost:4000          # terminal 1, copy the https URL
-PUBLIC_URL=https://xxxx.trycloudflare.com \
-  node agentproof/managed.mjs --tasks two_mugs_discount --mutants none,discount_not_applied   # terminal 2
-node agentproof/eval.mjs --runs runs_managed --tag managed_v1
-```
-
-The managed agent records its own video, screenshots and HAR in its sandbox and
-uploads them to `/__evidence/` on the store. Ground truth still comes from the
-store's order log, which the agent and the verifiers never see.
-
-Check the Interactions API request/response fields in `managed.mjs` against
-Builder Resources before the first run.
-
 ## Limitations
 
 - **Small samples, one run each.** 48 store runs and 24 Shop runs, each task ×
   bug combination run once, with one agent model (Gemini 4 Argon) and one judge
-  (Gemini 4 Carbon). Run-to-run variance is not measured; treat the numbers as
-  a demonstration, not a benchmark score.
+  (Gemini 4 Carbon). Run-to-run variance is checked on a second trial and repeat
+  judging passes in [benchmarks/reports/stability.md](benchmarks/reports/stability.md);
+  treat the numbers as a demonstration, not a benchmark score.
 - **The failures are designed.** Store bugs and Shop faults are injected by us.
   The agent's claims are real and unscripted, but the conditions that make them
   false are ours. On Shop, all 8 lies come from faults that change what the agent
@@ -460,6 +443,5 @@ Builder Resources before the first run.
   size must be a real option. Anything else (e.g. "best value") is not checked.
 - **Live data changes.** Shop prices and stock are what they were on
   2026-11-21; anonymous carts expire after 30 days.
-- **Managed Agents: not run** (see above).
 
 
