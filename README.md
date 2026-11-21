@@ -101,30 +101,62 @@ with backoff on 429/5xx, so "Errors" in the table means a call failed 4 times.
 test the plumbing. **Never report mock numbers as results.** The real eval uses
 the Gemini agent, whose behavior we don't script.
 
+## How the pieces connect
+
+```
+agentproof/tasks.json ─┐
+                       ├─> collect.mjs ──> runs/<task>__<bug>/ ──> eval.mjs ──> results/<tag>.md
+app/ (store + 1 bug) ──┘    (agent shops,   video.mp4, final.png,    (verifiers judge each run,
+                             server logs     run.json: claim, truth,  scored against the
+                             real orders)    network log              server's order log)
+```
+
+The verifiers only see the video, screenshot, claim and (for
+`agentproof+network`) the network log. The server's order log in `run.json` is
+the answer key, used only to score them.
+
 ## Files
 
 ```
-app/                 demo store, 11 injectable bugs, order log (ground truth)
-agentproof/
-  tasks.json         6 shopping tasks + expected orders
-  tasks.mjs          loads tasks / mutants, rejects unknown names
-  truth.mjs          ground truth: does the logged order match the task?
-  agent.mjs          the agent being checked (Gemini browser loop) + mock
-  collect.mjs        runs agent x bugs, records video + network + truth
-  verifiers.mjs      trust / single / agentproof / agentproof+network
-  metrics.mjs        accuracy, lies caught, false alarms
-  eval.mjs           scores verifiers against truth
-  managed.mjs        same as collect, with a Gemini Managed Agent
-src/                 shared code
-  gemini.mjs         Gemini SDK wrapper: retries, JSON parsing, model IDs from .env
-  paths.mjs          repo-root paths (scripts work from any directory)
-  cli.mjs            strict argument parsing (typos are errors)
-  media.mjs          ffmpeg helpers
-test/                unit tests (node --test, no API key, no browser)
+app/                   the demo store and the answer key
+  index.html           the store, with 11 bugs that can be switched on
+  mutants.json         the bug list
+  server.mjs           serves the store, logs every real order (ground truth)
+agentproof/            the product: run agents, check claims, score the checkers
+  tasks.json           6 shopping tasks + expected orders
+  tasks.mjs            loads tasks / mutants, rejects unknown names
+  truth.mjs            ground truth: does the logged order match the task?
+  agent.mjs            the agent being checked (Gemini browser loop) + mock
+  collect.mjs          runs agent x bugs, records video + network + truth
+  verifiers.mjs        trust / single / agentproof / agentproof+network
+  metrics.mjs          accuracy, lies caught, false alarms
+  eval.mjs             scores verifiers against truth
+  managed.mjs          same as collect, with a Gemini Managed Agent
+  managed-lib.mjs      parses the managed agent's claim and HAR network log
+src/                   shared code
+  gemini.mjs           Gemini SDK wrapper: retries, JSON parsing, model IDs from .env
+  paths.mjs            repo-root paths (scripts work from any directory)
+  cli.mjs              strict argument parsing (typos are errors)
+  media.mjs            ffmpeg helpers
+test/                  unit tests (node --test, no API key, no browser)
 scripts/
-  smoke.mjs          end-to-end mock run
-  doctor.mjs         setup check
-rec2test/            the earlier fallback idea (see below)
+  smoke.mjs            end-to-end mock run
+  doctor.mjs           setup check
+rec2test/              the earlier fallback idea (see below)
+docs/                  images for this README
+```
+
+Generated when you run things (git-ignored):
+
+```
+runs/                  collect.mjs output, one folder per task x bug:
+  <task>__<bug>/         video.mp4, raw.webm, final.png, step_<n>.png,
+                         run.json (claim, truth, network, orders),
+                         verdict.<verifier>.<tag>.json (cached verdicts)
+runs_mock/             same, from --mock (plumbing only, never report these)
+runs_managed/          same, from managed.mjs (+ session.har, interaction.json)
+results/<tag>.md       eval.mjs report: score table + every run a verifier got wrong
+rec2test/out/<tag>/    rec2test generated tests and scores
 ```
 
 ## Fallback: rec2test
