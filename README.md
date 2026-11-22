@@ -102,6 +102,55 @@ npm run export                                                 # export redacted
 
 ---
 
+## Reusing AgentProof as a Tool in Other Projects
+
+AgentProof (`v0.2.0`) can audit **any live URL or web app** (even apps without `data-testid` attributes, such as [Moisha](https://janagrit.github.io/Moisha/)) via CLI, Node SDK, or MCP:
+
+### 1. CLI (`agentproof check` / `agentproof verify`)
+```bash
+# Audit any live URL end-to-end (browser agent + Hydrogen + Carbon + Decisions API):
+node bin/agentproof.mjs check \
+  --url "https://janagrit.github.io/Moisha/" \
+  --task "Paste https://www.airbnb.com/rooms/48425132, verify /api/airbnb/ingest returns 200, and verify the primary unit matches 1 bedroom (not 3BR) with real airbnb.com/rooms/<id> links."
+
+# Re-audit an existing recorded run directory:
+node bin/agentproof.mjs verify --dir ./runs_check/moisha
+```
+
+### 2. Global MCP Server (`agentproof_check_url` & `agentproof_verify_run`)
+Add to `~/.gemini/config/mcp_config.json` (Antigravity) or `~/.claude.json` (Claude Code) so every workspace has AgentProof as a callable tool:
+```json
+{
+  "mcpServers": {
+    "agentproof": {
+      "command": "node",
+      "args": ["/Users/ianagrytsenko/Downloads/agentproof/src/mcp-server.mjs"],
+      "env": {
+        "GEMINI_API_KEY": "your-key",
+        "MODEL_AGENT": "gemini-4-argon",
+        "MODEL_PERCEIVE": "gemini-4-hydrogen",
+        "MODEL_AUTHOR": "gemini-4-carbon",
+        "MODEL_DECISION": "gemini-decision-1"
+      }
+    }
+  }
+}
+```
+
+### 3. Node / TypeScript SDK (`import from "agentproof"`)
+```js
+import { checkUrl, verifyAppRun, VERIFIERS } from "agentproof";
+
+const { verdict } = await checkUrl({
+  url: "http://localhost:5173",
+  instruction: "Import listing and verify comparable unit count and links.",
+  outDir: "./runs_check/local",
+});
+console.log(verdict.task_succeeded, verdict.evidence);
+```
+
+---
+
 ## Repository Map
 
 ```text

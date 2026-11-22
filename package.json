@@ -1,8 +1,17 @@
 {
   "name": "agentproof",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
   "type": "module",
+  "main": "./index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./verifiers": "./agentproof/verifiers.mjs",
+    "./app-check": "./agentproof/app-check.mjs",
+    "./mcp": "./src/mcp-server.mjs"
+  },
+  "bin": {
+    "agentproof": "./bin/agentproof.mjs"
+  },
   "engines": {
     "node": ">=20"
   },
@@ -13,6 +22,8 @@
     "eval": "node agentproof/eval.mjs",
     "shop": "node agentproof/shop-collect.mjs",
     "shop:mock": "node agentproof/shop-collect.mjs --mock",
+    "check-url": "node bin/agentproof.mjs check",
+    "mcp": "node src/mcp-server.mjs",
     "test": "node --test test/",
     "smoke": "node scripts/smoke.mjs",
     "check": "node --test test/ && node scripts/smoke.mjs",

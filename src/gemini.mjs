@@ -16,16 +16,16 @@ export function getAI() {
 
 export const MODELS = {
   // Fast model: watches the video, finds actions and timestamps.
-  perceive: process.env.MODEL_PERCEIVE,
+  get perceive() { return process.env.MODEL_PERCEIVE; },
   // Strongest reasoner: the judge.
-  author: process.env.MODEL_AUTHOR,
+  get author() { return process.env.MODEL_AUTHOR; },
   // The agent being checked (any model; it does not need to be good).
-  agent: process.env.MODEL_AGENT || process.env.MODEL_PERCEIVE,
+  get agent() { return process.env.MODEL_AGENT || process.env.MODEL_PERCEIVE; },
   // Baseline: one call, video in, verdict out. Same strong model as author
   // so the comparison isolates the method, not the model.
-  baseline: process.env.MODEL_BASELINE || process.env.MODEL_AUTHOR,
+  get baseline() { return process.env.MODEL_BASELINE || process.env.MODEL_AUTHOR; },
   // Calibrated structured decision gate (Gemini Decisions API, 0 output tokens).
-  decision: process.env.MODEL_DECISION || "gemini-decision-1",
+  get decision() { return process.env.MODEL_DECISION || "gemini-decision-1"; },
 };
 
 const ENV_FOR = {
